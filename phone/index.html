@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #phone-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9999;
+            justify-content: flex-end;
+            align-items: center;
+            padding-right: 40px;
+        }
+
+        #phone-overlay.open { display: flex; }
+
+        /* ===== iPhone Frame ===== */
+        .iphone-frame {
+            width: 320px;
+            height: 640px;
+            background: #000;
+            border-radius: 44px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 0 3px #1a1a1a, 0 0 0 6px #333, 0 20px 60px rgba(0,0,0,0.6);
+            animation: phoneSlideIn 0.3s ease;
+        }
+
+        @keyframes phoneSlideIn {
+            from { opacity: 0; transform: translateX(60px) scale(0.95); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        /* ===== Screen ===== */
+        .iphone-screen {
+            width: 100%;
+            height: 100%;
+            border-radius: 44px;
+            overflow: hidden;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* ===== Notch ===== */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 28px;
+            background: #000;
+            border-radius: 0 0 18px 18px;
+            z-index: 100;
+        }
+
+        .notch::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 25px;
+            width: 8px;
+            height: 8px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            border: 1.5px solid #2a2a3e;
+        }
+
+        /* ===== Status Bar ===== */
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 24px;
+            z-index: 99;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-bar .time { font-size: 14px; font-weight: 700; }
+        .status-bar .status-icons { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+        .status-bar .status-icons i { font-size: 12px; }
+
+        /* ===== Home Indicator ===== */
+        .home-indicator {
+            position: absolute;
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 2px;
+            z-index: 100;
+        }
+
+        /* ===== Wallpaper ===== */
+        .wallpaper {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533483 100%);
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
+
+        /* ===== Pages ===== */
+        .phone-page {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+        }
+
+        .phone-page.active { display: flex; }
+
+        /* ===== HOME SCREEN ===== */
+        #page-home {
+            padding: 52px 20px 80px;
+        }
+
+        .home-date {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 2px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .home-clock {
+            text-align: center;
+            color: #fff;
+            font-size: 62px;
+            font-weight: 200;
+            letter-spacing: -2px;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            margin-bottom: 20px;
+            line-height: 1;
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px 12px;
+            padding: 0 4px;
+        }
+
+        .app-icon {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+
+        .app-icon .icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            transition: transform 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .app-icon:active .icon-box { transform: scale(0.9); }
+
+        .app-icon .icon-label {
+            font-size: 9px;
+            font-weight: 500;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+            text-align: center;
+            max-width: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* App icon colors */
+        .app-phone .icon-box { background: linear-gradient(135deg, #5ed85e, #34c759); }
+        .app-messages .icon-box { background: linear-gradient(135deg, #5ed85e, #34c759); }
+        .app-camera .icon-box { background: linear-gradient(135deg, #666, #444); }
+        .app-settings .icon-box { background: linear-gradient(135deg, #8e8e93, #636366); }
+        .app-maps .icon-box { background: linear-gradient(135deg, #5ac8fa, #007aff); }
+        .app-notes .icon-box { background: linear-gradient(135deg, #ffd60a, #ff9f0a); }
+        .app-music .icon-box { background: linear-gradient(135deg, #ff375f, #ff2d55); }
+        .app-weather .icon-box { background: linear-gradient(135deg, #5ac8fa, #30b0c7); }
+        .app-clock-app .icon-box { background: linear-gradient(135deg, #1c1c1e, #000); }
+        .app-photos .icon-box { background: linear-gradient(135deg, #ff9500, #ff375f, #af52de, #5856d6); }
+        .app-wallet .icon-box { background: linear-gradient(135deg, #1c1c1e, #2c2c2e); }
+        .app-contacts .icon-box { background: linear-gradient(135deg, #8e8e93, #636366); }
+
+        /* Dock */
+        .dock {
+            position: absolute;
+            bottom: 16px;
+            left: 12px;
+            right: 12px;
+            height: 72px;
+            background: rgba(200,200,200,0.18);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 22px;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            z-index: 50;
+            padding: 0 8px;
+        }
+
+        .dock .app-icon .icon-label { display: none; }
+
+        /* ===== APP PAGE HEADER ===== */
+        .app-header {
+            display: flex;
+            align-items: center;
+            padding: 52px 16px 12px;
+            gap: 8px;
+        }
+
+        .app-back {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #007aff;
+            font-size: 15px;
+            font-weight: 400;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .app-back i { font-size: 18px; }
+
+        .app-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            flex: 1;
+            text-align: center;
+            margin-right: 40px;
+        }
+
+        .app-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0 16px 90px;
+        }
+
+        /* iOS style scrollbar */
+        .app-content::-webkit-scrollbar { width: 3px; }
+        .app-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+        /* ===== SETTINGS PAGE ===== */
+        .settings-group {
+            background: rgba(30,30,30,0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .settings-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 16px 6px;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            padding: 11px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+
+        .settings-item:last-child { border-bottom: none; }
+        .settings-item:active { background: rgba(255,255,255,0.05); }
+
+        .settings-item .si-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #fff;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .settings-item .si-label {
+            flex: 1;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .settings-item .si-value {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+            margin-right: 6px;
+        }
+
+        .settings-item .si-arrow {
+            color: rgba(255,255,255,0.2);
+            font-size: 12px;
+        }
+
+        /* Toggle switch */
+        .toggle-switch {
+            width: 42px;
+            height: 26px;
+            background: rgba(120,120,128,0.32);
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.on { background: #34c759; }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 11px;
+            transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .toggle-switch.on::after { transform: translateX(16px); }
+
+        /* ===== WALLPAPER SETTINGS ===== */
+        .wallpaper-preview {
+            width: 100%;
+            height: 160px;
+            border-radius: 12px;
+            margin-bottom: 14px;
+            background-size: cover;
+            background-position: center;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .wallpaper-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: rgba(30,30,30,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        .wallpaper-input:focus { border-color: #007aff; }
+        .wallpaper-input::placeholder { color: rgba(255,255,255,0.25); }
+
+        .wallpaper-presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .wallpaper-preset {
+            height: 80px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.15s, transform 0.15s;
+        }
+
+        .wallpaper-preset:active { transform: scale(0.95); }
+        .wallpaper-preset.selected { border-color: #007aff; }
+
+        .btn-ios {
+            width: 100%;
+            padding: 12px;
+            background: #007aff;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn-ios:active { opacity: 0.7; }
+
+        /* ===== PHONE APP ===== */
+        .dialpad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 20px;
+            max-width: 240px;
+            margin: 0 auto;
+        }
+
+        .dial-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.12);
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            font-weight: 300;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+            margin: 0 auto;
+        }
+
+        .dial-btn:active { background: rgba(255,255,255,0.25); }
+        .dial-btn .dial-sub { font-size: 8px; font-weight: 600; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); }
+
+        .dial-display {
+            text-align: center;
+            font-size: 28px;
+            font-weight: 300;
+            color: #fff;
+            padding: 16px;
+            min-height: 60px;
+            letter-spacing: 1px;
+        }
+
+        .call-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            background: #34c759;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== MESSAGES APP ===== */
+        .message-list { padding: 0; }
+
+        .message-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+        }
+
+        .message-item:active { background: rgba(255,255,255,0.03); }
+
+        .msg-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #8e8e93, #636366);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #fff;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .msg-info { flex: 1; overflow: hidden; }
+        .msg-name { font-size: 14px; font-weight: 600; color: #fff; }
+        .msg-preview { font-size: 12px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .msg-time { font-size: 11px; color: rgba(255,255,255,0.3); flex-shrink: 0; }
+
+        /* ===== NOTES APP ===== */
+        .notes-textarea {
+            width: 100%;
+            min-height: 300px;
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 15px;
+            font-family: inherit;
+            line-height: 1.6;
+            outline: none;
+            resize: none;
+        }
+
+        .notes-textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+        /* ===== WEATHER APP ===== */
+        .weather-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .weather-temp {
+            font-size: 72px;
+            font-weight: 200;
+            color: #fff;
+            line-height: 1;
+        }
+
+        .weather-desc {
+            font-size: 18px;
+            color: rgba(255,255,255,0.7);
+            margin-top: 4px;
+        }
+
+        .weather-location {
+            font-size: 22px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .weather-details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 24px;
+            padding: 16px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 12px;
+        }
+
+        .weather-detail {
+            text-align: center;
+        }
+
+        .weather-detail .wd-label {
+            font-size: 10px;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase;
+        }
+
+        .weather-detail .wd-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div id="phone-overlay">
+    <div class="iphone-frame">
+        <div class="iphone-screen" id="iphone-screen">
+            <div class="wallpaper" id="wallpaper"></div>
+            <div class="notch"></div>
+            <div class="status-bar">
+                <span class="time" id="status-time">12:00</span>
+                <span class="status-icons">
+                    <i class="fas fa-signal"></i>
+                    <i class="fas fa-wifi"></i>
+                    <i class="fas fa-battery-full"></i>
+                </span>
+            </div>
+            <div class="home-indicator" onclick="goHome()"></div>
+
+            <!-- ===== HOME SCREEN ===== -->
+            <div class="phone-page active" id="page-home">
+                <div class="home-date" id="home-date">Wednesday, March 5</div>
+                <div class="home-clock" id="home-clock">12:00</div>
+
+                <div class="app-grid">
+                    <div class="app-icon app-phone" onclick="openApp('phone')">
+                        <div class="icon-box"><i class="fas fa-phone"></i></div>
+                        <span class="icon-label">Phone</span>
+                    </div>
+                    <div class="app-icon app-messages" onclick="openApp('messages')">
+                        <div class="icon-box"><i class="fas fa-comment"></i></div>
+                        <span class="icon-label">Messages</span>
+                    </div>
+                    <div class="app-icon app-camera" onclick="openApp('camera')">
+                        <div class="icon-box"><i class="fas fa-camera"></i></div>
+                        <span class="icon-label">Camera</span>
+                    </div>
+                    <div class="app-icon app-photos" onclick="openApp('photos')">
+                        <div class="icon-box"><i class="fas fa-image"></i></div>
+                        <span class="icon-label">Photos</span>
+                    </div>
+                    <div class="app-icon app-maps" onclick="openApp('maps')">
+                        <div class="icon-box"><i class="fas fa-map"></i></div>
+                        <span class="icon-label">Maps</span>
+                    </div>
+                    <div class="app-icon app-weather" onclick="openApp('weather')">
+                        <div class="icon-box"><i class="fas fa-cloud-sun"></i></div>
+                        <span class="icon-label">Weather</span>
+                    </div>
+                    <div class="app-icon app-notes" onclick="openApp('notes')">
+                        <div class="icon-box"><i class="fas fa-sticky-note"></i></div>
+                        <span class="icon-label">Notes</span>
+                    </div>
+                    <div class="app-icon app-clock-app" onclick="openApp('clock')">
+                        <div class="icon-box"><i class="fas fa-clock"></i></div>
+                        <span class="icon-label">Clock</span>
+                    </div>
+                    <div class="app-icon app-music" onclick="openApp('music')">
+                        <div class="icon-box"><i class="fas fa-music"></i></div>
+                        <span class="icon-label">Music</span>
+                    </div>
+                    <div class="app-icon app-wallet" onclick="openApp('wallet')">
+                        <div class="icon-box"><i class="fas fa-wallet"></i></div>
+                        <span class="icon-label">Wallet</span>
+                    </div>
+                    <div class="app-icon app-contacts" onclick="openApp('contacts')">
+                        <div class="icon-box"><i class="fas fa-address-book"></i></div>
+                        <span class="icon-label">Contacts</span>
+                    </div>
+                    <div class="app-icon app-settings" onclick="openApp('settings')">
+                        <div class="icon-box"><i class="fas fa-gear"></i></div>
+                        <span class="icon-label">Settings</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PHONE APP ===== -->
+            <div class="phone-page" id="page-phone">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Phone</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <div class="dial-display" id="dial-display">&nbsp;</div>
+                    <div class="dialpad">
+                        <button class="dial-btn" onclick="dialPress('1')">1<span class="dial-sub">&nbsp;</span></button>
+                        <button class="dial-btn" onclick="dialPress('2')">2<span class="dial-sub">ABC</span></button>
+                        <button class="dial-btn" onclick="dialPress('3')">3<span class="dial-sub">DEF</span></button>
+                        <button class="dial-btn" onclick="dialPress('4')">4<span class="dial-sub">GHI</span></button>
+                        <button class="dial-btn" onclick="dialPress('5')">5<span class="dial-sub">JKL</span></button>
+                        <button class="dial-btn" onclick="dialPress('6')">6<span class="dial-sub">MNO</span></button>
+                        <button class="dial-btn" onclick="dialPress('7')">7<span class="dial-sub">PQRS</span></button>
+                        <button class="dial-btn" onclick="dialPress('8')">8<span class="dial-sub">TUV</span></button>
+                        <button class="dial-btn" onclick="dialPress('9')">9<span class="dial-sub">WXYZ</span></button>
+                        <button class="dial-btn" onclick="dialPress('*')">*</button>
+                        <button class="dial-btn" onclick="dialPress('0')">0<span class="dial-sub">+</span></button>
+                        <button class="dial-btn" onclick="dialPress('#')">#</button>
+                    </div>
+                    <div style="display:flex;justify-content:center;gap:30px;padding:10px;">
+                        <button class="call-btn" onclick="makeCall()"><i class="fas fa-phone"></i></button>
+                        <button class="dial-btn" style="width:50px;height:50px;font-size:18px;" onclick="dialBackspace()"><i class="fas fa-delete-left"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== MESSAGES APP ===== -->
+            <div class="phone-page" id="page-messages">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Messages</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <div class="message-list">
+                        <div class="message-item">
+                            <div class="msg-avatar"><i class="fas fa-user"></i></div>
+                            <div class="msg-info">
+                                <div class="msg-name">John D.</div>
+                                <div class="msg-preview">Hey, where are you? I'm waiting at the gas station.</div>
+                            </div>
+                            <span class="msg-time">2m ago</span>
+                        </div>
+                        <div class="message-item">
+                            <div class="msg-avatar" style="background:linear-gradient(135deg,#34c759,#30d158);"><i class="fas fa-users"></i></div>
+                            <div class="msg-info">
+                                <div class="msg-name">The Crew</div>
+                                <div class="msg-preview">Meeting at the warehouse at 8pm</div>
+                            </div>
+                            <span class="msg-time">15m ago</span>
+                        </div>
+                        <div class="message-item">
+                            <div class="msg-avatar" style="background:linear-gradient(135deg,#ff9500,#ff375f);"><i class="fas fa-user"></i></div>
+                            <div class="msg-info">
+                                <div class="msg-name">Mike T.</div>
+                                <div class="msg-preview">Got the supplies, meet me at LS</div>
+                            </div>
+                            <span class="msg-time">1h ago</span>
+                        </div>
+                        <div class="message-item">
+                            <div class="msg-avatar"><i class="fas fa-user"></i></div>
+                            <div class="msg-info">
+                                <div class="msg-name">Sarah</div>
+                                <div class="msg-preview">Thanks for the ride!</div>
+                            </div>
+                            <span class="msg-time">3h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== WEATHER APP ===== -->
+            <div class="phone-page" id="page-weather">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Weather</span>
+                </div>
+                <div class="app-content" style="background:linear-gradient(180deg,rgba(90,200,250,0.3),rgba(0,0,0,0.85));">
+                    <div class="weather-card">
+                        <div class="weather-location">Los Santos</div>
+                        <div class="weather-temp">28°</div>
+                        <div class="weather-desc"><i class="fas fa-sun" style="color:#ffd60a;"></i> Sunny</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <div class="wd-label">Humidity</div>
+                                <div class="wd-value">45%</div>
+                            </div>
+                            <div class="weather-detail">
+                                <div class="wd-label">Wind</div>
+                                <div class="wd-value">12 km/h</div>
+                            </div>
+                            <div class="weather-detail">
+                                <div class="wd-label">UV</div>
+                                <div class="wd-value">High</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== NOTES APP ===== -->
+            <div class="phone-page" id="page-notes">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Notes</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <textarea class="notes-textarea" id="notes-text" placeholder="Start typing your notes here..."></textarea>
+                </div>
+            </div>
+
+            <!-- ===== SETTINGS APP ===== -->
+            <div class="phone-page" id="page-settings">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Settings</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <div class="settings-group">
+                        <div class="settings-item" onclick="openApp('settings-wallpaper')">
+                            <div class="si-icon" style="background:#5856d6;"><i class="fas fa-image"></i></div>
+                            <span class="si-label">Wallpaper</span>
+                            <span class="si-arrow"><i class="fas fa-chevron-right"></i></span>
+                        </div>
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#007aff;"><i class="fas fa-bell"></i></div>
+                            <span class="si-label">Notifications</span>
+                            <div class="toggle-switch on" onclick="event.stopPropagation(); this.classList.toggle('on');"></div>
+                        </div>
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#5856d6;"><i class="fas fa-moon"></i></div>
+                            <span class="si-label">Do Not Disturb</span>
+                            <div class="toggle-switch" onclick="event.stopPropagation(); this.classList.toggle('on');"></div>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#34c759;"><i class="fas fa-battery-full"></i></div>
+                            <span class="si-label">Battery</span>
+                            <span class="si-value">87%</span>
+                            <span class="si-arrow"><i class="fas fa-chevron-right"></i></span>
+                        </div>
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#5ac8fa;"><i class="fas fa-wifi"></i></div>
+                            <span class="si-label">Wi-Fi</span>
+                            <span class="si-value">LS-Free</span>
+                            <span class="si-arrow"><i class="fas fa-chevron-right"></i></span>
+                        </div>
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#ff9500;"><i class="fas fa-plane"></i></div>
+                            <span class="si-label">Airplane Mode</span>
+                            <div class="toggle-switch" onclick="event.stopPropagation(); this.classList.toggle('on');"></div>
+                        </div>
+                    </div>
+                    <div class="settings-group">
+                        <div class="settings-item">
+                            <div class="si-icon" style="background:#8e8e93;"><i class="fas fa-info-circle"></i></div>
+                            <span class="si-label">About</span>
+                            <span class="si-value">iPhone 15 Pro</span>
+                            <span class="si-arrow"><i class="fas fa-chevron-right"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SETTINGS > WALLPAPER ===== -->
+            <div class="phone-page" id="page-settings-wallpaper">
+                <div class="app-header">
+                    <button class="app-back" onclick="openApp('settings')"><i class="fas fa-chevron-left"></i> Settings</button>
+                    <span class="app-title">Wallpaper</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <div class="wallpaper-preview" id="wp-preview"></div>
+                    <input class="wallpaper-input" id="wp-url-input" type="text" placeholder="Paste image URL here...">
+                    <button class="btn-ios" onclick="applyWallpaperURL()">Apply Wallpaper</button>
+
+                    <div class="settings-group-title" style="margin-top:20px;">Presets</div>
+                    <div class="wallpaper-presets" id="wp-presets"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== State =====
+    let isPhoneOpen = false;
+    let currentPage = 'home';
+    let dialNumber = '';
+    let wallpaperUrl = '';
+    let playerName = 'Player';
+
+    const PRESET_WALLPAPERS = [
+        'linear-gradient(145deg, #1a1a2e 0%, #16213e 30%, #0f3460 60%, #533483 100%)',
+        'linear-gradient(145deg, #0f0c29, #302b63, #24243e)',
+        'linear-gradient(145deg, #2c3e50, #4ca1af)',
+        'linear-gradient(145deg, #000428, #004e92)',
+        'linear-gradient(145deg, #360033, #0b8793)',
+        'linear-gradient(145deg, #1f1c2c, #928dab)',
+        'linear-gradient(145deg, #0f2027, #203a43, #2c5364)',
+        'linear-gradient(145deg, #200122, #6f0000)',
+        'linear-gradient(145deg, #141e30, #243b55)',
+    ];
+
+    // ===== Clock =====
+    function updateClock() {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const timeStr = h + ':' + m;
+
+        document.getElementById('status-time').textContent = timeStr;
+        document.getElementById('home-clock').textContent = timeStr;
+
+        const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        document.getElementById('home-date').textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ===== Navigation =====
+    function openApp(appName) {
+        document.querySelectorAll('.phone-page').forEach(p => p.classList.remove('active'));
+        const page = document.getElementById('page-' + appName);
+        if (page) {
+            page.classList.add('active');
+            currentPage = appName;
+        }
+
+        if (appName === 'settings-wallpaper') {
+            loadWallpaperSettings();
+        }
+    }
+
+    function goHome() {
+        document.querySelectorAll('.phone-page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-home').classList.add('active');
+        currentPage = 'home';
+    }
+
+    // ===== Phone App =====
+    function dialPress(digit) {
+        if (dialNumber.length < 15) {
+            dialNumber += digit;
+            document.getElementById('dial-display').textContent = dialNumber;
+        }
+    }
+
+    function dialBackspace() {
+        dialNumber = dialNumber.slice(0, -1);
+        document.getElementById('dial-display').textContent = dialNumber || '\u00A0';
+    }
+
+    function makeCall() {
+        if (dialNumber.length > 0) {
+            if (typeof cef !== 'undefined') {
+                cef.emit('phone:call', dialNumber);
+            }
+        }
+    }
+
+    // ===== Wallpaper =====
+    function setWallpaper(value) {
+        const el = document.getElementById('wallpaper');
+        if (value.startsWith('http')) {
+            el.style.background = `url(${value}) center/cover no-repeat`;
+            wallpaperUrl = value;
+        } else {
+            el.style.background = value;
+            wallpaperUrl = value;
+        }
+        // Save to server
+        if (typeof cef !== 'undefined') {
+            cef.emit('phone:wallpaper', wallpaperUrl);
+        }
+    }
+
+    function loadWallpaperSettings() {
+        const preview = document.getElementById('wp-preview');
+        const wpEl = document.getElementById('wallpaper');
+        preview.style.background = wpEl.style.background || PRESET_WALLPAPERS[0];
+        preview.style.backgroundSize = 'cover';
+
+        document.getElementById('wp-url-input').value = wallpaperUrl.startsWith('http') ? wallpaperUrl : '';
+
+        // Build presets
+        const container = document.getElementById('wp-presets');
+        container.innerHTML = '';
+        PRESET_WALLPAPERS.forEach((bg, i) => {
+            const el = document.createElement('div');
+            el.className = 'wallpaper-preset';
+            el.style.background = bg;
+            el.onclick = function() {
+                setWallpaper(bg);
+                document.querySelectorAll('.wallpaper-preset').forEach(p => p.classList.remove('selected'));
+                el.classList.add('selected');
+                preview.style.background = bg;
+                document.getElementById('wp-url-input').value = '';
+            };
+            container.appendChild(el);
+        });
+    }
+
+    function applyWallpaperURL() {
+        const url = document.getElementById('wp-url-input').value.trim();
+        if (url) {
+            setWallpaper(url);
+            document.getElementById('wp-preview').style.background = `url(${url}) center/cover no-repeat`;
+            document.querySelectorAll('.wallpaper-preset').forEach(p => p.classList.remove('selected'));
+        }
+    }
+
+    // ===== Open / Close =====
+    function openPhone() {
+        isPhoneOpen = true;
+        document.getElementById('phone-overlay').classList.add('open');
+        goHome();
+    }
+
+    function closePhone() {
+        isPhoneOpen = false;
+        document.getElementById('phone-overlay').classList.remove('open');
+        if (typeof cef !== 'undefined') cef.emit('phone:close');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isPhoneOpen) closePhone();
+    });
+
+    // ===== CEF Events =====
+    if (typeof cef !== 'undefined') {
+        cef.on('phone:open', function() { openPhone(); });
+        cef.on('phone:close', function() {
+            isPhoneOpen = false;
+            document.getElementById('phone-overlay').classList.remove('open');
+        });
+
+        cef.on('phone:setname', function(name) {
+            playerName = name;
+        });
+
+        cef.on('phone:wallpaper', function(wp) {
+            if (wp && wp.length > 0) {
+                setWallpaper(wp);
+            }
+        });
+
+        cef.on('phone:time', function(h, m) {
+            const timeStr = String(parseInt(h)).padStart(2, '0') + ':' + String(parseInt(m)).padStart(2, '0');
+            document.getElementById('status-time').textContent = timeStr;
+            document.getElementById('home-clock').textContent = timeStr;
+        });
+    }
+
+    // Init wallpaper
+    setWallpaper(PRESET_WALLPAPERS[0]);
+</script>
+</body>
+</html>

@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: transparent;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            color: #e0e0e0;
+        }
+
+        #inventory-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #inventory-overlay.open { display: flex; }
+
+        #inventory-container {
+            display: flex;
+            gap: 16px;
+            width: 920px;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* ===== PANEL ===== */
+        .inv-panel {
+            background: linear-gradient(145deg, rgba(30, 30, 38, 0.95), rgba(22, 22, 28, 0.98));
+            border: 1px solid rgba(255, 165, 0, 0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .inv-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: linear-gradient(90deg, rgba(255, 140, 0, 0.12), transparent);
+            border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+        }
+
+        .inv-panel-header .header-icon {
+            width: 30px; height: 30px;
+            background: linear-gradient(135deg, #ff8c00, #e67300);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #fff;
+            box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+        }
+
+        .inv-panel-header h2 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px; color: #f0f0f0;
+        }
+
+        /* ===== LEFT PANEL ===== */
+        #player-panel { flex: 1; min-width: 500px; }
+        #action-panel { width: 320px; display: flex; flex-direction: column; }
+
+        /* ===== WEAPON SLOTS ===== */
+        .weapon-slots-container {
+            padding: 10px 14px 6px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .weapon-slots-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            color: rgba(255, 70, 70, 0.6);
+            margin-bottom: 6px;
+        }
+
+        .weapon-slots-row {
+            display: flex;
+            gap: 6px;
+        }
+
+        .weapon-slot {
+            position: relative;
+            flex: 1;
+            height: 60px;
+            background: rgba(255, 70, 70, 0.04);
+            border: 1px dashed rgba(255, 70, 70, 0.15);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .weapon-slot:hover {
+            border-color: rgba(255, 70, 70, 0.35);
+            background: rgba(255, 70, 70, 0.08);
+        }
+
+        .weapon-slot.selected {
+            border-color: rgba(255, 165, 0, 0.6);
+            border-style: solid;
+            background: rgba(255, 165, 0, 0.1);
+            box-shadow: 0 0 12px rgba(255, 140, 0, 0.15);
+        }
+
+        .weapon-slot.has-weapon {
+            border-style: solid;
+            border-color: rgba(255, 70, 70, 0.3);
+            background: rgba(255, 70, 70, 0.06);
+        }
+
+        .weapon-slot.drag-over {
+            border-color: rgba(100, 255, 100, 0.5);
+            background: rgba(100, 255, 100, 0.08);
+        }
+
+        .weapon-slot .slot-label {
+            font-size: 7px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255, 100, 100, 0.35);
+            position: absolute; bottom: 3px;
+        }
+
+        .weapon-slot .slot-icon {
+            font-size: 18px; color: #ff5555;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .weapon-slot .slot-name {
+            font-size: 7px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center; max-width: 90%;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+
+        /* ===== INVENTORY GRID ===== */
+        .inv-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 5px;
+            padding: 10px 14px;
+        }
+
+        .inv-slot {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .inv-slot:hover {
+            border-color: rgba(255, 165, 0, 0.3);
+            background: rgba(255, 165, 0, 0.05);
+        }
+
+        .inv-slot.selected {
+            border-color: rgba(255, 165, 0, 0.6);
+            background: rgba(255, 165, 0, 0.1);
+            box-shadow: 0 0 12px rgba(255, 140, 0, 0.15);
+        }
+
+        .inv-slot.drag-over {
+            border-color: rgba(100, 255, 100, 0.5);
+            background: rgba(100, 255, 100, 0.08);
+        }
+
+        .inv-slot.dragging { opacity: 0.4; }
+
+        .inv-slot .slot-icon, .weapon-slot .slot-icon-inner {
+            font-size: 20px; color: #ff9a3c;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+            transition: transform 0.15s ease;
+        }
+
+        .inv-slot:hover .slot-icon { transform: scale(1.1); }
+
+        .inv-slot .slot-name {
+            font-size: 7px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center; line-height: 1.1;
+            max-width: 90%;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+
+        .inv-slot .slot-amount, .weapon-slot .slot-amount {
+            position: absolute; top: 3px; right: 5px;
+            font-size: 10px; font-weight: 700; color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* ===== WEIGHT BAR ===== */
+        .weight-bar-container {
+            padding: 6px 14px 12px;
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        .weight-bar-label {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px; font-weight: 700; color: #ff8c00;
+            text-transform: uppercase; letter-spacing: 1px; white-space: nowrap;
+        }
+
+        .weight-bar-bg {
+            flex: 1; height: 5px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 3px; overflow: hidden;
+        }
+
+        .weight-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff8c00, #ff6600);
+            border-radius: 3px; transition: width 0.3s ease; width: 0%;
+        }
+
+        .weight-bar-fill.warning { background: linear-gradient(90deg, #ff4444, #cc0000); }
+
+        .weight-bar-text {
+            font-size: 11px; font-weight: 600;
+            color: rgba(255, 255, 255, 0.6); white-space: nowrap;
+        }
+
+        /* ===== ITEM DETAILS ===== */
+        .item-details {
+            padding: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            min-height: 130px; flex: 1;
+        }
+
+        .item-details-empty {
+            display: flex; align-items: center; justify-content: center;
+            height: 100%; min-height: 110px;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 12px; font-style: italic;
+        }
+
+        .item-detail-header {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .item-detail-icon {
+            width: 40px; height: 40px;
+            background: rgba(255, 140, 0, 0.1);
+            border: 1px solid rgba(255, 140, 0, 0.2);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; color: #ff9a3c;
+        }
+
+        .item-detail-info h3 {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 15px; font-weight: 700; color: #fff;
+        }
+
+        .item-detail-info .item-type {
+            font-size: 9px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px; color: #ff8c00;
+        }
+
+        .item-detail-desc {
+            font-size: 11px; color: rgba(255, 255, 255, 0.5);
+            line-height: 1.5; margin-bottom: 8px;
+        }
+
+        .item-detail-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+
+        .item-stat { font-size: 11px; }
+        .item-stat .stat-label { color: rgba(255, 255, 255, 0.35); text-transform: uppercase; font-size: 8px; letter-spacing: 0.5px; }
+        .item-stat .stat-value { color: #fff; font-weight: 600; }
+
+        /* ===== ACTION BUTTONS ===== */
+        .action-buttons {
+            padding: 12px; display: flex; flex-direction: column;
+            gap: 6px; margin-top: auto;
+        }
+
+        .action-btn {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 9px 14px; border: none; border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; transition: all 0.15s ease;
+        }
+
+        .action-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .action-btn:active { transform: translateY(0); }
+        .action-btn.disabled { opacity: 0.35; pointer-events: none; }
+
+        .btn-use { background: linear-gradient(135deg, #ff8c00, #e67300); color: #fff; }
+        .btn-equip { background: linear-gradient(135deg, #ff4444, #cc2200); color: #fff; }
+        .btn-unequip { background: linear-gradient(135deg, #4488ff, #2266cc); color: #fff; }
+
+        .btn-drop {
+            background: rgba(255, 70, 70, 0.15);
+            border: 1px solid rgba(255, 70, 70, 0.3); color: #ff6b6b;
+        }
+        .btn-drop:hover { background: rgba(255, 70, 70, 0.25); }
+
+        .btn-give {
+            background: rgba(100, 200, 100, 0.15);
+            border: 1px solid rgba(100, 200, 100, 0.3); color: #7ddb7d;
+        }
+        .btn-give:hover { background: rgba(100, 200, 100, 0.25); }
+
+        .btn-split {
+            background: rgba(150, 120, 255, 0.15);
+            border: 1px solid rgba(150, 120, 255, 0.3); color: #aa99ff;
+        }
+        .btn-split:hover { background: rgba(150, 120, 255, 0.25); }
+
+        /* ===== TOP BAR ===== */
+        .top-bar { display: flex; justify-content: flex-end; align-items: center; gap: 12px; padding: 0 16px 0 0; }
+        .close-hint { font-size: 10px; color: rgba(255, 255, 255, 0.4); display: flex; align-items: center; gap: 6px; }
+        .key-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 2px 7px;
+            background: rgba(255, 140, 0, 0.2); border: 1px solid rgba(255, 140, 0, 0.4);
+            border-radius: 4px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 10px; font-weight: 700; color: #ff8c00;
+        }
+
+        /* ===== DRAG GHOST ===== */
+        .drag-ghost {
+            position: fixed; pointer-events: none; z-index: 99999;
+            width: 56px; height: 56px;
+            background: rgba(255, 140, 0, 0.15);
+            border: 1px solid rgba(255, 140, 0, 0.5);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px; color: #ff9a3c;
+            opacity: 0.9;
+            transform: translate(-50%, -50%);
+        }
+
+        /* ===== NOTIFICATION ===== */
+        .inv-notification {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%) translateY(-60px);
+            padding: 10px 24px; border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 13px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            z-index: 100002; pointer-events: none;
+            opacity: 0; transition: all 0.3s ease;
+        }
+        .inv-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .inv-notification.error { background: rgba(255, 60, 60, 0.9); color: #fff; }
+        .inv-notification.info { background: rgba(255, 140, 0, 0.9); color: #fff; }
+        .inv-notification.success { background: rgba(80, 200, 80, 0.9); color: #fff; }
+
+        /* ===== CONTEXT MENU ===== */
+        .context-menu {
+            display: none; position: fixed; z-index: 100000;
+            background: rgba(30, 30, 38, 0.98);
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            border-radius: 6px; min-width: 150px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+        .context-menu.open { display: block; }
+
+        .context-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; font-size: 11px; font-weight: 500;
+            color: #e0e0e0; cursor: pointer; transition: background 0.1s;
+        }
+        .context-item:hover { background: rgba(255, 140, 0, 0.1); }
+        .context-item i { width: 16px; text-align: center; font-size: 11px; color: #ff8c00; }
+        .context-item.danger { color: #ff6b6b; }
+        .context-item.danger i { color: #ff6b6b; }
+        .context-separator { height: 1px; background: rgba(255, 255, 255, 0.06); margin: 2px 0; }
+
+        /* ===== TOOLTIP ===== */
+        .tooltip {
+            display: none; position: fixed; z-index: 100000;
+            background: rgba(20, 20, 26, 0.98);
+            border: 1px solid rgba(255, 165, 0, 0.25);
+            border-radius: 6px; padding: 8px 12px; max-width: 200px;
+            pointer-events: none;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+        .tooltip.show { display: block; }
+        .tooltip h4 { font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+        .tooltip .tt-type { font-size: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #ff8c00; margin-bottom: 4px; }
+        .tooltip .tt-desc { font-size: 10px; color: rgba(255, 255, 255, 0.5); line-height: 1.4; }
+
+        /* ===== QUANTITY MODAL ===== */
+        .quantity-modal {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 100001; background: rgba(0,0,0,0.5);
+            justify-content: center; align-items: center;
+        }
+        .quantity-modal.open { display: flex; }
+
+        .quantity-box {
+            background: rgba(30, 30, 38, 0.98);
+            border: 1px solid rgba(255, 165, 0, 0.25);
+            border-radius: 8px; padding: 20px; width: 260px;
+            text-align: center;
+        }
+        .quantity-box h3 { font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .quantity-box .qty-subtitle { font-size: 10px; color: rgba(255, 255, 255, 0.4); margin-bottom: 12px; }
+        .quantity-box input {
+            width: 100%; padding: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            border-radius: 6px; color: #fff;
+            font-size: 16px; font-weight: 600;
+            text-align: center; outline: none;
+            font-family: 'Rajdhani', sans-serif;
+        }
+        .quantity-box input:focus { border-color: rgba(255, 165, 0, 0.5); }
+        .quantity-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .quantity-actions button {
+            flex: 1; padding: 7px; border: none; border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 12px; font-weight: 700;
+            text-transform: uppercase; cursor: pointer;
+        }
+        .qty-confirm { background: linear-gradient(135deg, #ff8c00, #e67300); color: #fff; }
+        .qty-cancel { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); }
+    </style>
+</head>
+<body>
+
+<!-- Inventory Overlay -->
+<div id="inventory-overlay">
+    <div id="inventory-container">
+        <!-- Left: Player Inventory -->
+        <div id="player-panel" class="inv-panel">
+            <div class="inv-panel-header">
+                <div class="header-icon"><i class="fas fa-box-open"></i></div>
+                <h2>Player Inventory</h2>
+                <div style="margin-left:auto;" class="top-bar">
+                    <span class="close-hint">Close <span class="key-badge">ESC</span></span>
+                </div>
+            </div>
+            <!-- Weapon Slots -->
+            <div class="weapon-slots-container">
+                <div class="weapon-slots-label"><i class="fas fa-crosshairs"></i> Equipped Weapons</div>
+                <div class="weapon-slots-row" id="weapon-slots">
+                    <div class="weapon-slot" id="wslot-0" data-wslot="0">
+                        <span class="slot-label">Primary</span>
+                    </div>
+                    <div class="weapon-slot" id="wslot-1" data-wslot="1">
+                        <span class="slot-label">Secondary</span>
+                    </div>
+                    <div class="weapon-slot" id="wslot-2" data-wslot="2">
+                        <span class="slot-label">Melee</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Inventory Grid -->
+            <div id="player-grid" class="inv-grid"></div>
+            <div class="weight-bar-container">
+                <span class="weight-bar-label"><i class="fas fa-weight-hanging"></i> Weight</span>
+                <div class="weight-bar-bg"><div id="weight-fill" class="weight-bar-fill"></div></div>
+                <span id="weight-text" class="weight-bar-text">0.00 / 120 kg</span>
+            </div>
+        </div>
+
+        <!-- Right: Item Details & Actions -->
+        <div id="action-panel" class="inv-panel">
+            <div class="inv-panel-header">
+                <div class="header-icon"><i class="fas fa-info-circle"></i></div>
+                <h2>Item Info</h2>
+            </div>
+            <div id="item-details" class="item-details">
+                <div class="item-details-empty"><span>Select an item to view details</span></div>
+            </div>
+            <div class="action-buttons" id="action-buttons"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Tooltip -->
+<div id="tooltip" class="tooltip"></div>
+
+<!-- Context Menu -->
+<div id="context-menu" class="context-menu"></div>
+
+<!-- Quantity Modal -->
+<div id="quantity-modal" class="quantity-modal">
+    <div class="quantity-box">
+        <h3 id="qty-title">Split Stack</h3>
+        <div id="qty-subtitle" class="qty-subtitle">Enter quantity</div>
+        <input id="qty-input" type="number" min="1" value="1">
+        <div class="quantity-actions">
+            <button class="qty-cancel" onclick="closeQuantityModal()">Cancel</button>
+            <button class="qty-confirm" onclick="confirmQuantity()">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- Drag Ghost -->
+<div id="drag-ghost" class="drag-ghost" style="display:none;"></div>
+
+<!-- Notification -->
+<div id="inv-notification" class="inv-notification"></div>
+
+<script>
+    // ===== Item Definitions (must match Pawn item IDs) =====
+    const ITEM_DEFS = {
+        // Melee Weapons
+        1:  { name: 'Brass Knuckles', icon: 'fa-hand-fist', type: 'weapon', weaponSlot: 'melee', weight: 0.5, desc: 'Close combat weapon.' },
+        2:  { name: 'Golf Club', icon: 'fa-golf-ball-tee', type: 'weapon', weaponSlot: 'melee', weight: 1.5, desc: 'A heavy golf club.' },
+        3:  { name: 'Nightstick', icon: 'fa-gavel', type: 'weapon', weaponSlot: 'melee', weight: 1.0, desc: 'Standard police nightstick.' },
+        4:  { name: 'Knife', icon: 'fa-knife-kitchen', type: 'weapon', weaponSlot: 'melee', weight: 0.3, desc: 'A sharp knife.' },
+        5:  { name: 'Baseball Bat', icon: 'fa-baseball-bat-ball', type: 'weapon', weaponSlot: 'melee', weight: 1.2, desc: 'Wooden baseball bat.' },
+        6:  { name: 'Shovel', icon: 'fa-shovel', type: 'weapon', weaponSlot: 'melee', weight: 2.0, desc: 'A heavy shovel.' },
+        7:  { name: 'Pool Cue', icon: 'fa-wand-magic', type: 'weapon', weaponSlot: 'melee', weight: 1.0, desc: 'Pool cue stick.' },
+        8:  { name: 'Katana', icon: 'fa-khanda', type: 'weapon', weaponSlot: 'melee', weight: 1.5, desc: 'A sharp katana sword.' },
+        9:  { name: 'Chainsaw', icon: 'fa-hammer', type: 'weapon', weaponSlot: 'melee', weight: 5.0, desc: 'Deadly chainsaw.' },
+
+        // Pistols (secondary)
+        22: { name: '9mm Pistol', icon: 'fa-gun', type: 'weapon', weaponSlot: 'secondary', weight: 1.0, desc: 'Standard 9mm pistol.' },
+        23: { name: 'Silenced Pistol', icon: 'fa-gun', type: 'weapon', weaponSlot: 'secondary', weight: 1.1, desc: 'Silenced 9mm pistol.' },
+        24: { name: 'Desert Eagle', icon: 'fa-gun', type: 'weapon', weaponSlot: 'secondary', weight: 1.8, desc: 'Powerful .50 caliber pistol.' },
+
+        // Shotguns (primary)
+        25: { name: 'Shotgun', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 3.5, desc: 'Pump-action shotgun.' },
+        26: { name: 'Sawn-off Shotgun', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 2.8, desc: 'Short-barrel shotgun.' },
+        27: { name: 'Combat Shotgun', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 3.8, desc: 'Auto combat shotgun.' },
+
+        // SMGs (primary)
+        28: { name: 'Micro SMG', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 2.0, desc: 'Compact submachine gun.' },
+        29: { name: 'SMG', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 2.5, desc: 'Standard submachine gun.' },
+        32: { name: 'Tec-9', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 1.8, desc: 'Semi-auto Tec-9.' },
+
+        // Rifles (primary)
+        30: { name: 'AK-47', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 4.0, desc: 'Assault rifle AK-47.' },
+        31: { name: 'M4', icon: 'fa-gun', type: 'weapon', weaponSlot: 'primary', weight: 3.8, desc: 'Military M4 rifle.' },
+        33: { name: 'Rifle', icon: 'fa-crosshairs', type: 'weapon', weaponSlot: 'primary', weight: 3.5, desc: 'Country rifle.' },
+        34: { name: 'Sniper Rifle', icon: 'fa-crosshairs', type: 'weapon', weaponSlot: 'primary', weight: 5.0, desc: 'Long-range sniper rifle.' },
+
+        // Electronics
+        100: { name: 'Phone', icon: 'fa-mobile-screen', type: 'electronics', weight: 0.2, desc: 'Mobile phone.' },
+        101: { name: 'GPS', icon: 'fa-location-dot', type: 'electronics', weight: 0.3, desc: 'GPS navigation device.' },
+        102: { name: 'Radio', icon: 'fa-walkie-talkie', type: 'electronics', weight: 0.5, desc: 'Portable radio.' },
+        103: { name: 'Camera', icon: 'fa-camera', type: 'electronics', weight: 0.8, desc: 'Digital camera.' },
+
+        // Food & Drinks
+        200: { name: 'Burger', icon: 'fa-burger', type: 'food', weight: 0.3, desc: 'Restores 20 HP.', effect: '+20 HP' },
+        201: { name: 'Pizza', icon: 'fa-pizza-slice', type: 'food', weight: 0.4, desc: 'Restores 35 HP.', effect: '+35 HP' },
+        202: { name: 'Hotdog', icon: 'fa-hotdog', type: 'food', weight: 0.2, desc: 'Restores 15 HP.', effect: '+15 HP' },
+        203: { name: 'Water', icon: 'fa-bottle-water', type: 'drink', weight: 0.5, desc: 'Restores 10 HP.', effect: '+10 HP' },
+        204: { name: 'Sprunk', icon: 'fa-can-food', type: 'drink', weight: 0.3, desc: 'Restores 15 HP.', effect: '+15 HP' },
+        205: { name: 'Beer', icon: 'fa-beer-mug-empty', type: 'drink', weight: 0.4, desc: 'An ice cold beer.' },
+        206: { name: 'Wine', icon: 'fa-wine-glass', type: 'drink', weight: 0.6, desc: 'Fine wine.' },
+
+        // Medical
+        300: { name: 'First Aid Kit', icon: 'fa-kit-medical', type: 'medical', weight: 1.0, desc: 'Restores 50 HP.', effect: '+50 HP' },
+        301: { name: 'Bandage', icon: 'fa-bandage', type: 'medical', weight: 0.2, desc: 'Restores 20 HP.', effect: '+20 HP' },
+        302: { name: 'Painkillers', icon: 'fa-pills', type: 'medical', weight: 0.1, desc: 'Restores 15 HP.', effect: '+15 HP' },
+        303: { name: 'Armor Vest', icon: 'fa-shield-halved', type: 'medical', weight: 3.0, desc: 'Sets armor to 100.', effect: '+100 Armor' },
+
+        // Materials
+        400: { name: 'Materials', icon: 'fa-cubes', type: 'material', weight: 0.5, desc: 'Crafting materials.' },
+        401: { name: 'Metal Parts', icon: 'fa-gears', type: 'material', weight: 1.0, desc: 'Metal parts.' },
+        402: { name: 'Rope', icon: 'fa-ring', type: 'material', weight: 0.5, desc: 'A sturdy rope.' },
+        403: { name: 'Duct Tape', icon: 'fa-tape', type: 'material', weight: 0.2, desc: 'Universal tape.' },
+
+        // Drugs
+        500: { name: 'Marijuana', icon: 'fa-cannabis', type: 'drug', weight: 0.1, desc: 'Illegal substance.' },
+        501: { name: 'Cocaine', icon: 'fa-prescription-bottle', type: 'drug', weight: 0.1, desc: 'Illegal substance.' },
+        502: { name: 'Meth', icon: 'fa-flask', type: 'drug', weight: 0.1, desc: 'Illegal substance.' },
+
+        // Keys & Tools
+        600: { name: 'House Key', icon: 'fa-key', type: 'key', weight: 0.05, desc: 'Key to your house.' },
+        601: { name: 'Car Key', icon: 'fa-car', type: 'key', weight: 0.05, desc: 'Key to your vehicle.' },
+        602: { name: 'Lockpick', icon: 'fa-lock-open', type: 'tool', weight: 0.2, desc: 'Can pick locks.' },
+
+        // Misc
+        700: { name: 'Fishing Rod', icon: 'fa-fish', type: 'tool', weight: 2.0, desc: 'Used for fishing.' },
+        701: { name: 'Backpack', icon: 'fa-suitcase', type: 'tool', weight: 1.0, desc: '+30 carry weight.', effect: '+30 Weight' },
+        702: { name: 'Boombox', icon: 'fa-radio', type: 'electronics', weight: 3.0, desc: 'Portable music player.' },
+        703: { name: 'Mask', icon: 'fa-mask', type: 'tool', weight: 0.2, desc: 'Hides your identity.' },
+        704: { name: 'Cigarettes', icon: 'fa-smoking', type: 'misc', weight: 0.05, desc: 'A pack of cigarettes.' },
+        705: { name: 'Lighter', icon: 'fa-fire', type: 'misc', weight: 0.05, desc: 'A simple lighter.' },
+        706: { name: 'Spray Can', icon: 'fa-spray-can', type: 'misc', weight: 0.3, desc: 'For graffiti.' },
+        707: { name: 'Toolbox', icon: 'fa-toolbox', type: 'tool', weight: 4.0, desc: 'Various tools.' },
+        708: { name: 'Jerrycan', icon: 'fa-gas-pump', type: 'tool', weight: 3.0, desc: 'Contains fuel.' },
+    };
+
+    const TYPE_COLORS = {
+        weapon: '#ff4444', electronics: '#44aaff', food: '#88cc44', drink: '#44cccc',
+        medical: '#ff66aa', material: '#aa88ff', drug: '#cc44cc',
+        key: '#ffcc00', tool: '#88aacc', misc: '#aaaaaa'
+    };
+
+    // Weapon slot types: 0=primary, 1=secondary, 2=melee
+    const WSLOT_TYPES = ['primary', 'secondary', 'melee'];
+    const WSLOT_LABELS = ['Primary', 'Secondary', 'Melee'];
+
+    // ===== State =====
+    const MAX_SLOTS = 30;
+    const MAX_WEIGHT = 120.0;
+    let inventory = new Array(MAX_SLOTS).fill(null); // {itemId, amount} or null
+    let weaponSlots = [null, null, null]; // 3 weapon slots: {itemId}
+    let selectedSlot = -1;   // -1 = none, 0-29 = inv slot
+    let selectedWSlot = -1;  // -1 = none, 0-2 = weapon slot
+    let currentWeight = 0;
+    let isOpen = false;
+
+    // Mouse drag state
+    let dragSrc = null;      // { type: 'inv'|'weapon', index: number }
+    let isDragging = false;
+    let dragStartX = 0, dragStartY = 0;
+    let mouseDownTarget = null;
+
+    let quantityCallback = null;
+    let contextSlot = -1;   // slot that context menu was opened on
+    let contextWSlot = -1;  // weapon slot that context menu was opened on
+
+    // ===== Initialize =====
+    function initGrid() {
+        const grid = document.getElementById('player-grid');
+        grid.innerHTML = '';
+        for (let i = 0; i < MAX_SLOTS; i++) {
+            const slot = document.createElement('div');
+            slot.className = 'inv-slot';
+            slot.dataset.slot = i;
+            slot.addEventListener('click', (e) => { if (!isDragging) selectInvSlot(i); });
+            slot.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, 'inv', i); });
+            slot.addEventListener('mouseenter', (e) => showTooltip(e, 'inv', i));
+            slot.addEventListener('mouseleave', hideTooltip);
+            slot.addEventListener('mousemove', moveTooltip);
+            grid.appendChild(slot);
+        }
+
+        // Weapon slot events
+        for (let w = 0; w < 3; w++) {
+            const ws = document.getElementById('wslot-' + w);
+            ws.addEventListener('click', (e) => { if (!isDragging) selectWeaponSlot(w); });
+            ws.addEventListener('contextmenu', (e) => { e.preventDefault(); openContextMenu(e, 'weapon', w); });
+            ws.addEventListener('mouseenter', (e) => showTooltip(e, 'weapon', w));
+            ws.addEventListener('mouseleave', hideTooltip);
+            ws.addEventListener('mousemove', moveTooltip);
+        }
+    }
+
+    // ===== Mouse-based Drag & Drop =====
+    document.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        // Check if clicked on an inv slot with item
+        const slotEl = e.target.closest('.inv-slot');
+        const wSlotEl = e.target.closest('.weapon-slot');
+
+        if (slotEl) {
+            const idx = parseInt(slotEl.dataset.slot);
+            if (inventory[idx]) {
+                mouseDownTarget = { type: 'inv', index: idx, el: slotEl };
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+            }
+        } else if (wSlotEl) {
+            const idx = parseInt(wSlotEl.dataset.wslot);
+            if (weaponSlots[idx]) {
+                mouseDownTarget = { type: 'weapon', index: idx, el: wSlotEl };
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+            }
+        }
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!mouseDownTarget) return;
+
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+
+        // Start drag after 5px threshold
+        if (!isDragging && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+            isDragging = true;
+            dragSrc = { type: mouseDownTarget.type, index: mouseDownTarget.index };
+            mouseDownTarget.el.classList.add('dragging');
+
+            // Show ghost
+            let itemId;
+            if (dragSrc.type === 'inv') itemId = inventory[dragSrc.index].itemId;
+            else itemId = weaponSlots[dragSrc.index].itemId;
+
+            const def = ITEM_DEFS[itemId];
+            if (def) {
+                const ghost = document.getElementById('drag-ghost');
+                ghost.innerHTML = `<i class="fas ${def.icon}" style="color:${TYPE_COLORS[def.type] || '#ff9a3c'}"></i>`;
+                ghost.style.display = 'flex';
+            }
+            hideTooltip();
+        }
+
+        if (isDragging) {
+            const ghost = document.getElementById('drag-ghost');
+            ghost.style.left = e.clientX + 'px';
+            ghost.style.top = e.clientY + 'px';
+
+            // Highlight drop targets
+            clearDragOverHighlights();
+            const target = getDragTarget(e);
+            if (target && target.el) target.el.classList.add('drag-over');
+        }
+    });
+
+    document.addEventListener('mouseup', (e) => {
+        if (isDragging && dragSrc) {
+            const target = getDragTarget(e);
+            if (target) {
+                handleDrop(dragSrc, target);
+            }
+            // Cleanup
+            clearDragOverHighlights();
+            document.querySelectorAll('.dragging').forEach(el => el.classList.remove('dragging'));
+            document.getElementById('drag-ghost').style.display = 'none';
+            isDragging = false;
+            dragSrc = null;
+        }
+        mouseDownTarget = null;
+    });
+
+    function clearDragOverHighlights() {
+        document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function getDragTarget(e) {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        if (!el) return null;
+
+        const slotEl = el.closest('.inv-slot');
+        if (slotEl) return { type: 'inv', index: parseInt(slotEl.dataset.slot), el: slotEl };
+
+        const wSlotEl = el.closest('.weapon-slot');
+        if (wSlotEl) return { type: 'weapon', index: parseInt(wSlotEl.dataset.wslot), el: wSlotEl };
+
+        return null;
+    }
+
+    function handleDrop(src, tgt) {
+        // Inv -> Inv = swap
+        if (src.type === 'inv' && tgt.type === 'inv') {
+            if (src.index === tgt.index) return;
+            console.log('[INV] swap', src.index, '->', tgt.index);
+            if (typeof cef !== 'undefined') cef.emit('inv:swap', String(src.index), String(tgt.index));
+
+            // Optimistic local swap
+            const tmp = inventory[src.index];
+            inventory[src.index] = inventory[tgt.index];
+            inventory[tgt.index] = tmp;
+            if (selectedSlot === src.index) selectedSlot = tgt.index;
+            else if (selectedSlot === tgt.index) selectedSlot = src.index;
+            renderInventory();
+        }
+        // Inv -> Weapon slot = equip
+        else if (src.type === 'inv' && tgt.type === 'weapon') {
+            const item = inventory[src.index];
+            if (!item) return;
+            const def = ITEM_DEFS[item.itemId];
+            if (!def || def.type !== 'weapon') {
+                showNotification('Only weapons can be equipped!', 'error');
+                return;
+            }
+            if (def.weaponSlot !== WSLOT_TYPES[tgt.index]) {
+                showNotification('Wrong weapon slot! This is a ' + def.weaponSlot + ' weapon.', 'error');
+                return;
+            }
+            console.log('[INV] equip slot', src.index, 'to wslot', tgt.index);
+            if (typeof cef !== 'undefined') cef.emit('inv:use', String(src.index), String(item.itemId));
+        }
+        // Weapon slot -> Inv = unequip
+        else if (src.type === 'weapon' && tgt.type === 'inv') {
+            const wItem = weaponSlots[src.index];
+            if (!wItem) return;
+            console.log('[INV] unequip wslot', src.index);
+            if (typeof cef !== 'undefined') cef.emit('inv:unequip', String(src.index), String(wItem.itemId));
+        }
+    }
+
+    // ===== Selection =====
+    function selectInvSlot(index) {
+        closeContextMenu();
+        selectedWSlot = -1;
+        selectedSlot = (selectedSlot === index) ? -1 : index;
+        renderInventory();
+    }
+
+    function selectWeaponSlot(index) {
+        closeContextMenu();
+        selectedSlot = -1;
+        selectedWSlot = (selectedWSlot === index) ? -1 : index;
+        renderInventory();
+    }
+
+    // ===== Render =====
+    function renderInventory() {
+        const slots = document.querySelectorAll('#player-grid .inv-slot');
+        currentWeight = 0;
+
+        slots.forEach((slotEl, i) => {
+            const item = inventory[i];
+            slotEl.innerHTML = '';
+            slotEl.classList.remove('selected', 'dragging');
+            if (i === selectedSlot) slotEl.classList.add('selected');
+
+            if (item && ITEM_DEFS[item.itemId]) {
+                const def = ITEM_DEFS[item.itemId];
+                currentWeight += def.weight * item.amount;
+                slotEl.innerHTML = `
+                    <i class="fas ${def.icon} slot-icon" style="color:${TYPE_COLORS[def.type] || '#ff9a3c'}"></i>
+                    <span class="slot-name">${def.name}</span>
+                    ${item.amount > 1 ? `<span class="slot-amount">x${item.amount}</span>` : ''}
+                `;
+            }
+        });
+
+        // Weapon slots
+        for (let w = 0; w < 3; w++) {
+            const ws = document.getElementById('wslot-' + w);
+            const wItem = weaponSlots[w];
+            ws.classList.remove('selected', 'has-weapon');
+            if (w === selectedWSlot) ws.classList.add('selected');
+
+            // Keep slot-label
+            const label = `<span class="slot-label">${WSLOT_LABELS[w]}</span>`;
+            if (wItem && ITEM_DEFS[wItem.itemId]) {
+                const def = ITEM_DEFS[wItem.itemId];
+                currentWeight += def.weight;
+                ws.classList.add('has-weapon');
+                ws.innerHTML = `
+                    <i class="fas ${def.icon} slot-icon" style="color:#ff5555"></i>
+                    <span class="slot-name">${def.name}</span>
+                    ${label}
+                `;
+            } else {
+                ws.innerHTML = label;
+            }
+        }
+
+        updateWeightBar();
+        updateDetails();
+        updateButtons();
+    }
+
+    function updateWeightBar() {
+        const pct = Math.min(100, (currentWeight / MAX_WEIGHT) * 100);
+        const fill = document.getElementById('weight-fill');
+        fill.style.width = pct + '%';
+        fill.classList.toggle('warning', pct > 85);
+        document.getElementById('weight-text').textContent = currentWeight.toFixed(2) + ' / ' + MAX_WEIGHT + ' kg';
+    }
+
+    // ===== Details =====
+    function updateDetails() {
+        const panel = document.getElementById('item-details');
+
+        let item = null, def = null, isWeaponSlot = false;
+        if (selectedSlot >= 0 && inventory[selectedSlot]) {
+            item = inventory[selectedSlot];
+            def = ITEM_DEFS[item.itemId];
+        } else if (selectedWSlot >= 0 && weaponSlots[selectedWSlot]) {
+            item = weaponSlots[selectedWSlot];
+            def = ITEM_DEFS[item.itemId];
+            isWeaponSlot = true;
+        }
+
+        if (!item || !def) {
+            panel.innerHTML = '<div class="item-details-empty"><span>Select an item to view details</span></div>';
+            return;
+        }
+
+        const color = TYPE_COLORS[def.type] || '#ff9a3c';
+        panel.innerHTML = `
+            <div class="item-detail-header">
+                <div class="item-detail-icon" style="color:${color};border-color:${color}33;background:${color}11;">
+                    <i class="fas ${def.icon}"></i>
+                </div>
+                <div class="item-detail-info">
+                    <h3>${def.name}</h3>
+                    <span class="item-type" style="color:${color}">${def.type.toUpperCase()}${isWeaponSlot ? ' (EQUIPPED)' : ''}</span>
+                </div>
+            </div>
+            <div class="item-detail-desc">${def.desc}</div>
+            <div class="item-detail-stats">
+                ${!isWeaponSlot && item.amount ? `<div class="item-stat"><span class="stat-label">Amount</span><br><span class="stat-value">x${item.amount}</span></div>` : ''}
+                <div class="item-stat"><span class="stat-label">Weight</span><br><span class="stat-value">${(def.weight * (item.amount || 1)).toFixed(2)} kg</span></div>
+                ${def.effect ? `<div class="item-stat"><span class="stat-label">Effect</span><br><span class="stat-value" style="color:#55cc55">${def.effect}</span></div>` : ''}
+            </div>
+        `;
+    }
+
+    // ===== Action Buttons =====
+    function updateButtons() {
+        const btns = document.getElementById('action-buttons');
+        btns.innerHTML = '';
+
+        // Weapon slot selected -> unequip button
+        if (selectedWSlot >= 0 && weaponSlots[selectedWSlot]) {
+            btns.innerHTML = `
+                <button class="action-btn btn-unequip" onclick="unequipWeapon()"><i class="fas fa-arrow-down"></i> Unequip</button>
+                <button class="action-btn btn-drop" onclick="dropEquipped()"><i class="fas fa-trash-alt"></i> Drop</button>
+            `;
+            return;
+        }
+
+        // Inv slot selected
+        if (selectedSlot >= 0 && inventory[selectedSlot]) {
+            const item = inventory[selectedSlot];
+            const def = ITEM_DEFS[item.itemId];
+            const isWeapon = def && def.type === 'weapon';
+
+            btns.innerHTML = `
+                <button class="action-btn ${isWeapon ? 'btn-equip' : 'btn-use'}" onclick="useSelectedItem()">
+                    <i class="fas ${isWeapon ? 'fa-crosshairs' : 'fa-hand-pointer'}"></i> ${isWeapon ? 'Equip' : 'Use Item'}
+                </button>
+                ${item.amount > 1 ? `<button class="action-btn btn-split" onclick="splitItem()"><i class="fas fa-divide"></i> Split Stack</button>` : ''}
+                <button class="action-btn btn-drop" onclick="dropSelectedItem()"><i class="fas fa-trash-alt"></i> Drop Item</button>
+                <button class="action-btn btn-give" onclick="giveSelectedItem()"><i class="fas fa-handshake"></i> Give Item</button>
+            `;
+        }
+    }
+
+    // ===== Actions =====
+    function useSelectedItem() {
+        closeContextMenu();
+        if (selectedSlot < 0 || !inventory[selectedSlot]) return;
+        const item = inventory[selectedSlot];
+        if (typeof cef !== 'undefined') cef.emit('inv:use', String(selectedSlot), String(item.itemId));
+    }
+
+    function dropSelectedItem() {
+        closeContextMenu();
+        if (selectedSlot < 0 || !inventory[selectedSlot]) return;
+        const item = inventory[selectedSlot];
+        if (item.amount > 1) {
+            openQuantityModal('Drop Item', `How many to drop? (Max: ${item.amount})`, item.amount, (qty) => {
+                if (typeof cef !== 'undefined') cef.emit('inv:drop', String(selectedSlot), String(item.itemId), String(qty));
+            });
+        } else {
+            if (typeof cef !== 'undefined') cef.emit('inv:drop', String(selectedSlot), String(item.itemId), '1');
+        }
+    }
+
+    function giveSelectedItem() {
+        closeContextMenu();
+        if (selectedSlot < 0 || !inventory[selectedSlot]) return;
+        const item = inventory[selectedSlot];
+        if (item.amount > 1) {
+            openQuantityModal('Give Item', `How many to give? (Max: ${item.amount})`, item.amount, (qty) => {
+                if (typeof cef !== 'undefined') cef.emit('inv:give', String(selectedSlot), String(item.itemId), String(qty));
+            });
+        } else {
+            if (typeof cef !== 'undefined') cef.emit('inv:give', String(selectedSlot), String(item.itemId), '1');
+        }
+    }
+
+    function splitItem() {
+        closeContextMenu();
+        if (selectedSlot < 0 || !inventory[selectedSlot]) return;
+        const item = inventory[selectedSlot];
+        if (item.amount <= 1) { showNotification('Cannot split a single item!', 'error'); return; }
+        openQuantityModal('Split Stack', `Split off how many? (Max: ${item.amount - 1})`, item.amount - 1, (qty) => {
+            if (typeof cef !== 'undefined') cef.emit('inv:split', String(selectedSlot), String(item.itemId), String(qty));
+        });
+    }
+
+    function unequipWeapon() {
+        closeContextMenu();
+        if (selectedWSlot < 0 || !weaponSlots[selectedWSlot]) return;
+        const wItem = weaponSlots[selectedWSlot];
+        if (typeof cef !== 'undefined') cef.emit('inv:unequip', String(selectedWSlot), String(wItem.itemId));
+    }
+
+    function dropEquipped() {
+        closeContextMenu();
+        if (selectedWSlot < 0 || !weaponSlots[selectedWSlot]) return;
+        const wItem = weaponSlots[selectedWSlot];
+        if (typeof cef !== 'undefined') cef.emit('inv:dropequipped', String(selectedWSlot), String(wItem.itemId));
+    }
+
+    // ===== Context Menu =====
+    function openContextMenu(e, type, index) {
+        e.stopPropagation();
+        contextSlot = -1;
+        contextWSlot = -1;
+
+        if (type === 'inv') {
+            contextSlot = index;
+            selectInvSlot(index);
+            if (!inventory[index]) return;
+            const item = inventory[index];
+            const def = ITEM_DEFS[item.itemId];
+            const isWeapon = def && def.type === 'weapon';
+
+            let html = `<div class="context-item" onclick="event.stopPropagation(); ctxUse()"><i class="fas ${isWeapon ? 'fa-crosshairs' : 'fa-hand-pointer'}"></i> ${isWeapon ? 'Equip' : 'Use'}</div>`;
+            if (item.amount > 1) html += `<div class="context-item" onclick="event.stopPropagation(); ctxSplit()"><i class="fas fa-divide"></i> Split Stack</div>`;
+            html += `<div class="context-separator"></div>`;
+            html += `<div class="context-item" onclick="event.stopPropagation(); ctxGive()"><i class="fas fa-handshake"></i> Give</div>`;
+            html += `<div class="context-item danger" onclick="event.stopPropagation(); ctxDrop()"><i class="fas fa-trash-alt"></i> Drop</div>`;
+
+            const menu = document.getElementById('context-menu');
+            menu.innerHTML = html;
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            menu.classList.add('open');
+        } else if (type === 'weapon') {
+            contextWSlot = index;
+            selectWeaponSlot(index);
+            if (!weaponSlots[index]) return;
+
+            let html = `<div class="context-item" onclick="event.stopPropagation(); ctxUnequip()"><i class="fas fa-arrow-down"></i> Unequip</div>`;
+            html += `<div class="context-item danger" onclick="event.stopPropagation(); ctxDropEquipped()"><i class="fas fa-trash-alt"></i> Drop</div>`;
+
+            const menu = document.getElementById('context-menu');
+            menu.innerHTML = html;
+            menu.style.left = e.clientX + 'px';
+            menu.style.top = e.clientY + 'px';
+            menu.classList.add('open');
+        }
+    }
+
+    // Context menu actions - use contextSlot to avoid glitching
+    function ctxUse() {
+        const s = contextSlot;
+        closeContextMenu();
+        if (s < 0 || !inventory[s]) return;
+        const item = inventory[s];
+        if (typeof cef !== 'undefined') cef.emit('inv:use', String(s), String(item.itemId));
+    }
+    function ctxDrop() {
+        const s = contextSlot;
+        closeContextMenu();
+        if (s < 0 || !inventory[s]) return;
+        const item = inventory[s];
+        if (item.amount > 1) {
+            openQuantityModal('Drop Item', `How many to drop? (Max: ${item.amount})`, item.amount, (qty) => {
+                if (typeof cef !== 'undefined') cef.emit('inv:drop', String(s), String(item.itemId), String(qty));
+            });
+        } else {
+            if (typeof cef !== 'undefined') cef.emit('inv:drop', String(s), String(item.itemId), '1');
+        }
+    }
+    function ctxGive() {
+        const s = contextSlot;
+        closeContextMenu();
+        if (s < 0 || !inventory[s]) return;
+        const item = inventory[s];
+        if (item.amount > 1) {
+            openQuantityModal('Give Item', `How many to give? (Max: ${item.amount})`, item.amount, (qty) => {
+                if (typeof cef !== 'undefined') cef.emit('inv:give', String(s), String(item.itemId), String(qty));
+            });
+        } else {
+            if (typeof cef !== 'undefined') cef.emit('inv:give', String(s), String(item.itemId), '1');
+        }
+    }
+    function ctxSplit() {
+        const s = contextSlot;
+        closeContextMenu();
+        if (s < 0 || !inventory[s]) return;
+        const item = inventory[s];
+        if (item.amount <= 1) { showNotification('Cannot split a single item!', 'error'); return; }
+        openQuantityModal('Split Stack', `Split off how many? (Max: ${item.amount - 1})`, item.amount - 1, (qty) => {
+            if (typeof cef !== 'undefined') cef.emit('inv:split', String(s), String(item.itemId), String(qty));
+        });
+    }
+    function ctxUnequip() {
+        const w = contextWSlot;
+        closeContextMenu();
+        if (w < 0 || !weaponSlots[w]) return;
+        const wItem = weaponSlots[w];
+        if (typeof cef !== 'undefined') cef.emit('inv:unequip', String(w), String(wItem.itemId));
+    }
+    function ctxDropEquipped() {
+        const w = contextWSlot;
+        closeContextMenu();
+        if (w < 0 || !weaponSlots[w]) return;
+        const wItem = weaponSlots[w];
+        if (typeof cef !== 'undefined') cef.emit('inv:dropequipped', String(w), String(wItem.itemId));
+    }
+
+    function closeContextMenu() {
+        document.getElementById('context-menu').classList.remove('open');
+    }
+
+    // Close context on click elsewhere
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.context-menu')) closeContextMenu();
+    });
+
+    // ===== Tooltip =====
+    function showTooltip(e, type, index) {
+        if (isDragging) return;
+        let item, def;
+        if (type === 'inv') {
+            item = inventory[index];
+        } else {
+            item = weaponSlots[index];
+        }
+        if (!item) return;
+        def = ITEM_DEFS[item.itemId];
+        if (!def) return;
+
+        const tt = document.getElementById('tooltip');
+        const color = TYPE_COLORS[def.type] || '#ff9a3c';
+        tt.innerHTML = `
+            <h4 style="color:${color}">${def.name}</h4>
+            <div class="tt-type">${def.type}${type === 'weapon' ? ' (equipped)' : ''}</div>
+            <div class="tt-desc">${def.desc}</div>
+        `;
+        tt.style.left = (e.clientX + 14) + 'px';
+        tt.style.top = (e.clientY + 14) + 'px';
+        tt.classList.add('show');
+    }
+
+    function hideTooltip() { document.getElementById('tooltip').classList.remove('show'); }
+    function moveTooltip(e) {
+        const tt = document.getElementById('tooltip');
+        if (tt.classList.contains('show')) {
+            tt.style.left = (e.clientX + 14) + 'px';
+            tt.style.top = (e.clientY + 14) + 'px';
+        }
+    }
+
+    // ===== Quantity Modal =====
+    function openQuantityModal(title, subtitle, max, callback) {
+        document.getElementById('qty-title').textContent = title;
+        document.getElementById('qty-subtitle').textContent = subtitle;
+        const input = document.getElementById('qty-input');
+        input.max = max;
+        input.value = 1;
+        quantityCallback = callback;
+        document.getElementById('quantity-modal').classList.add('open');
+        input.focus();
+    }
+
+    function closeQuantityModal() {
+        document.getElementById('quantity-modal').classList.remove('open');
+        quantityCallback = null;
+    }
+
+    function confirmQuantity() {
+        const input = document.getElementById('qty-input');
+        const val = parseInt(input.value);
+        const max = parseInt(input.max);
+        if (isNaN(val) || val < 1 || val > max) return;
+        if (quantityCallback) quantityCallback(val);
+        closeQuantityModal();
+    }
+
+    // ===== Notification =====
+    function showNotification(msg, type) {
+        const el = document.getElementById('inv-notification');
+        el.textContent = msg;
+        el.className = 'inv-notification show ' + (type || 'info');
+        setTimeout(() => { el.classList.remove('show'); }, 3000);
+    }
+
+    // ===== Open / Close =====
+    function openInventory() {
+        isOpen = true;
+        document.getElementById('inventory-overlay').classList.add('open');
+    }
+
+    function closeInventory() {
+        isOpen = false;
+        document.getElementById('inventory-overlay').classList.remove('open');
+        selectedSlot = -1;
+        selectedWSlot = -1;
+        closeContextMenu();
+        closeQuantityModal();
+        hideTooltip();
+        if (typeof cef !== 'undefined') cef.emit('inv:close');
+    }
+
+    // ESC to close
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && isOpen) closeInventory();
+    });
+
+    // ===== CEF Events =====
+    if (typeof cef !== 'undefined') {
+        cef.on('inv:open', function() { openInventory(); });
+        cef.on('inv:close', function() {
+            isOpen = false;
+            document.getElementById('inventory-overlay').classList.remove('open');
+        });
+
+        // Full inventory data: JSON string
+        cef.on('inv:data', function(jsonData) {
+            console.log('[INV] inv:data received');
+            try {
+                inventory = new Array(MAX_SLOTS).fill(null);
+                const items = JSON.parse(jsonData);
+                items.forEach(item => {
+                    if (item.slot >= 0 && item.slot < MAX_SLOTS) {
+                        inventory[item.slot] = { itemId: item.itemId, amount: item.amount };
+                    }
+                });
+                renderInventory();
+            } catch(e) {
+                console.error('[INV] data parse error', e);
+            }
+        });
+
+        // Single slot update
+        cef.on('inv:setslot', function(slot, itemId, amount) {
+            const s = parseInt(slot), id = parseInt(itemId), amt = parseInt(amount);
+            if (s < 0 || s >= MAX_SLOTS) return;
+            if (id <= 0 || amt <= 0) { inventory[s] = null; }
+            else { inventory[s] = { itemId: id, amount: amt }; }
+            renderInventory();
+        });
+
+        // Clear slot
+        cef.on('inv:clearslot', function(slot) {
+            const s = parseInt(slot);
+            if (s >= 0 && s < MAX_SLOTS) inventory[s] = null;
+            if (selectedSlot === s) selectedSlot = -1;
+            renderInventory();
+        });
+
+        // Weapon slot updates from server
+        cef.on('inv:equipslot', function(wslot, itemId) {
+            const w = parseInt(wslot), id = parseInt(itemId);
+            if (w >= 0 && w < 3 && id > 0) weaponSlots[w] = { itemId: id };
+            renderInventory();
+        });
+
+        cef.on('inv:clearequip', function(wslot) {
+            const w = parseInt(wslot);
+            if (w >= 0 && w < 3) weaponSlots[w] = null;
+            if (selectedWSlot === w) selectedWSlot = -1;
+            renderInventory();
+        });
+
+        // Notification from server
+        cef.on('inv:notify', function(message, type) {
+            showNotification(message, type);
+        });
+
+        cef.on('inv:maxweight', function(weight) {
+            // Future use
+        });
+    }
+
+    // ===== Init =====
+    initGrid();
+    renderInventory();
+</script>
+</body>
+</html>
