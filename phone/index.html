@@ -26,20 +26,20 @@
             z-index: 9999;
             justify-content: flex-end;
             align-items: center;
-            padding-right: 40px;
+            padding-right: 30px;
         }
 
         #phone-overlay.open { display: flex; }
 
         /* ===== iPhone Frame ===== */
         .iphone-frame {
-            width: 320px;
-            height: 640px;
+            width: 280px;
+            height: 560px;
             background: #000;
-            border-radius: 44px;
+            border-radius: 36px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 0 0 3px #1a1a1a, 0 0 0 6px #333, 0 20px 60px rgba(0,0,0,0.6);
+            box-shadow: 0 0 0 3px #1a1a1a, 0 0 0 6px #333, 0 20px 50px rgba(0,0,0,0.6);
             animation: phoneSlideIn 0.3s ease;
         }
 
@@ -52,7 +52,7 @@
         .iphone-screen {
             width: 100%;
             height: 100%;
-            border-radius: 44px;
+            border-radius: 36px;
             overflow: hidden;
             position: relative;
             background-size: cover;
@@ -65,23 +65,23 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 150px;
-            height: 28px;
+            width: 120px;
+            height: 24px;
             background: #000;
-            border-radius: 0 0 18px 18px;
+            border-radius: 0 0 16px 16px;
             z-index: 100;
         }
 
         .notch::before {
             content: '';
             position: absolute;
-            top: 8px;
-            right: 25px;
-            width: 8px;
-            height: 8px;
+            top: 6px;
+            right: 20px;
+            width: 6px;
+            height: 6px;
             background: #1a1a2e;
             border-radius: 50%;
-            border: 1.5px solid #2a2a3e;
+            border: 1px solid #2a2a3e;
         }
 
         /* ===== Status Bar ===== */
@@ -94,7 +94,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 20px;
             z-index: 99;
             color: #fff;
             font-size: 12px;
@@ -108,11 +108,11 @@
         /* ===== Home Indicator ===== */
         .home-indicator {
             position: absolute;
-            bottom: 6px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
-            height: 4px;
+            width: 100px;
+            height: 3px;
             background: rgba(255,255,255,0.4);
             border-radius: 2px;
             z-index: 100;
@@ -143,7 +143,7 @@
 
         /* ===== HOME SCREEN ===== */
         #page-home {
-            padding: 52px 20px 80px;
+            padding: 44px 16px 70px;
         }
 
         .home-date {
@@ -158,19 +158,19 @@
         .home-clock {
             text-align: center;
             color: #fff;
-            font-size: 62px;
+            font-size: 48px;
             font-weight: 200;
-            letter-spacing: -2px;
+            letter-spacing: -1px;
             text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             line-height: 1;
         }
 
         .app-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 18px 12px;
-            padding: 0 4px;
+            gap: 14px 8px;
+            padding: 0 2px;
         }
 
         .app-icon {
@@ -182,16 +182,16 @@
         }
 
         .app-icon .icon-box {
-            width: 52px;
-            height: 52px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 18px;
             color: #fff;
             transition: transform 0.15s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .app-icon:active .icon-box { transform: scale(0.9); }
@@ -219,25 +219,25 @@
         .app-weather .icon-box { background: linear-gradient(135deg, #5ac8fa, #30b0c7); }
         .app-clock-app .icon-box { background: linear-gradient(135deg, #1c1c1e, #000); }
         .app-photos .icon-box { background: linear-gradient(135deg, #ff9500, #ff375f, #af52de, #5856d6); }
-        .app-wallet .icon-box { background: linear-gradient(135deg, #1c1c1e, #2c2c2e); }
+        .app-banking .icon-box { background: linear-gradient(135deg, #007aff, #0051d5); }
         .app-contacts .icon-box { background: linear-gradient(135deg, #8e8e93, #636366); }
 
         /* Dock */
         .dock {
             position: absolute;
-            bottom: 16px;
-            left: 12px;
-            right: 12px;
-            height: 72px;
+            bottom: 12px;
+            left: 10px;
+            right: 10px;
+            height: 60px;
             background: rgba(200,200,200,0.18);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-radius: 22px;
+            border-radius: 18px;
             display: flex;
             justify-content: space-evenly;
             align-items: center;
             z-index: 50;
-            padding: 0 8px;
+            padding: 0 6px;
         }
 
         .dock .app-icon .icon-label { display: none; }
@@ -246,7 +246,7 @@
         .app-header {
             display: flex;
             align-items: center;
-            padding: 52px 16px 12px;
+            padding: 44px 14px 10px;
             gap: 8px;
         }
 
@@ -416,6 +416,192 @@
 
         .wallpaper-preset:active { transform: scale(0.95); }
         .wallpaper-preset.selected { border-color: #007aff; }
+
+        /* ===== BANKING APP ===== */
+        .banking-header {
+            background: linear-gradient(135deg, #007aff, #0051d5);
+            padding: 16px;
+            border-radius: 12px 12px 0 0;
+            text-align: center;
+            color: #fff;
+        }
+
+        .banking-balance {
+            margin-bottom: 16px;
+        }
+
+        .balance-label {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-bottom: 4px;
+        }
+
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .banking-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .banking-action {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .banking-action:active {
+            background: rgba(255,255,255,0.1);
+            transform: scale(0.98);
+        }
+
+        .banking-action .action-icon {
+            font-size: 20px;
+            color: #007aff;
+            margin-bottom: 8px;
+        }
+
+        .banking-action .action-label {
+            font-size: 13px;
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .banking-logs {
+            padding: 0 16px 16px;
+        }
+
+        .logs-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .log-item:last-child { border-bottom: none; }
+
+        .log-info {
+            flex: 1;
+        }
+
+        .log-type {
+            font-size: 12px;
+            font-weight: 600;
+            color: #007aff;
+            margin-bottom: 2px;
+        }
+
+        .log-details {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .log-amount {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .log-amount.positive { color: #34c759; }
+        .log-amount.negative { color: #ff3b30; }
+
+        /* Modal dialogs */
+        .banking-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .banking-modal.active { display: flex; }
+
+        .modal-content {
+            background: #1c1c1e;
+            border-radius: 16px;
+            width: 240px;
+            max-height: 320px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 16px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .modal-input:focus { border-color: #007aff; }
+
+        .modal-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .modal-btn:active { opacity: 0.7; }
+
+        .modal-btn-cancel {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .modal-btn-confirm {
+            background: #007aff;
+            color: #fff;
+        }
 
         .btn-ios {
             width: 100%;
@@ -649,9 +835,9 @@
                         <div class="icon-box"><i class="fas fa-music"></i></div>
                         <span class="icon-label">Music</span>
                     </div>
-                    <div class="app-icon app-wallet" onclick="openApp('wallet')">
-                        <div class="icon-box"><i class="fas fa-wallet"></i></div>
-                        <span class="icon-label">Wallet</span>
+                    <div class="app-icon app-banking" onclick="openApp('banking')">
+                        <div class="icon-box"><i class="fas fa-university"></i></div>
+                        <span class="icon-label">Banking</span>
                     </div>
                     <div class="app-icon app-contacts" onclick="openApp('contacts')">
                         <div class="icon-box"><i class="fas fa-address-book"></i></div>
@@ -847,6 +1033,64 @@
                 </div>
             </div>
 
+            <!-- ===== BANKING APP ===== -->
+            <div class="phone-page" id="page-banking">
+                <div class="app-header">
+                    <button class="app-back" onclick="goHome()"><i class="fas fa-chevron-left"></i></button>
+                    <span class="app-title">Banking</span>
+                </div>
+                <div class="app-content" style="background:rgba(0,0,0,0.85);">
+                    <div class="banking-header">
+                        <div class="banking-balance">
+                            <div class="balance-label">Total Balance</div>
+                            <div class="balance-amount" id="bank-balance">$0</div>
+                        </div>
+                        <div class="balance-label">Cash: <span id="bank-cash">$0</span></div>
+                    </div>
+                    
+                    <div class="banking-actions">
+                        <div class="banking-action" onclick="bankingAction('deposit')">
+                            <div class="action-icon"><i class="fas fa-arrow-down"></i></div>
+                            <div class="action-label">Deposit</div>
+                        </div>
+                        <div class="banking-action" onclick="bankingAction('withdraw')">
+                            <div class="action-icon"><i class="fas fa-arrow-up"></i></div>
+                            <div class="action-label">Withdraw</div>
+                        </div>
+                        <div class="banking-action" onclick="bankingAction('transfer')">
+                            <div class="action-icon"><i class="fas fa-exchange-alt"></i></div>
+                            <div class="action-label">Transfer</div>
+                        </div>
+                        <div class="banking-action" onclick="bankingAction('balance')">
+                            <div class="action-icon"><i class="fas fa-wallet"></i></div>
+                            <div class="action-label">Balance</div>
+                        </div>
+                    </div>
+                    
+                    <div class="banking-logs">
+                        <div class="logs-header">Recent Transactions</div>
+                        <div id="bank-logs"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banking Modals -->
+            <div class="banking-modal" id="bank-modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="modal-title" id="modal-title">Deposit</div>
+                    </div>
+                    <div class="modal-body">
+                        <input type="number" class="modal-input" id="modal-amount" placeholder="Amount" min="1">
+                        <input type="text" class="modal-input" id="modal-target" placeholder="Player ID (for transfer)" style="display:none;">
+                        <div class="modal-buttons">
+                            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
+                            <button class="modal-btn modal-btn-confirm" onclick="confirmModal()">Confirm</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -981,6 +1225,106 @@
         }
     }
 
+    // ===== BANKING APP =====
+    let bankingData = {
+        cash: 0,
+        bank: 0,
+        logs: []
+    };
+    let currentBankAction = '';
+
+    function updateBankingDisplay() {
+        document.getElementById('bank-balance').textContent = '$' + (bankingData.cash + bankingData.bank).toLocaleString();
+        document.getElementById('bank-cash').textContent = '$' + bankingData.cash.toLocaleString();
+        updateBankLogs();
+    }
+
+    function updateBankLogs() {
+        const logsContainer = document.getElementById('bank-logs');
+        if (bankingData.logs.length === 0) {
+            logsContainer.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;">No recent transactions</div>';
+            return;
+        }
+
+        logsContainer.innerHTML = '';
+        bankingData.logs.slice(0, 10).forEach(log => {
+            const logEl = document.createElement('div');
+            logEl.className = 'log-item';
+            
+            const amountClass = log.amount > 0 ? 'positive' : 'negative';
+            const amountSign = log.amount > 0 ? '+' : '';
+            
+            logEl.innerHTML = `
+                <div class="log-info">
+                    <div class="log-type">${log.type}</div>
+                    <div class="log-details">${log.details}</div>
+                </div>
+                <div class="log-amount ${amountClass}">${amountSign}$${Math.abs(log.amount).toLocaleString()}</div>
+            `;
+            logsContainer.appendChild(logEl);
+        });
+    }
+
+    function bankingAction(action) {
+        currentBankAction = action;
+        const modal = document.getElementById('bank-modal');
+        const title = document.getElementById('modal-title');
+        const targetInput = document.getElementById('modal-target');
+        const amountInput = document.getElementById('modal-amount');
+        
+        // Reset inputs
+        amountInput.value = '';
+        targetInput.value = '';
+        
+        switch(action) {
+            case 'deposit':
+                title.textContent = 'Deposit to Bank';
+                targetInput.style.display = 'none';
+                break;
+            case 'withdraw':
+                title.textContent = 'Withdraw from Bank';
+                targetInput.style.display = 'none';
+                break;
+            case 'transfer':
+                title.textContent = 'Transfer to Player';
+                targetInput.style.display = 'block';
+                break;
+            case 'balance':
+                // Just show balance info
+                if (typeof cef !== 'undefined') {
+                    cef.emit('bank:balance');
+                }
+                return;
+        }
+        
+        modal.classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('bank-modal').classList.remove('active');
+    }
+
+    function confirmModal() {
+        const amount = parseInt(document.getElementById('modal-amount').value) || 0;
+        const target = document.getElementById('modal-target').value.trim();
+        
+        if (amount <= 0) {
+            alert('Please enter a valid amount');
+            return;
+        }
+        
+        if (currentBankAction === 'transfer' && (!target || isNaN(parseInt(target)))) {
+            alert('Please enter a valid player ID');
+            return;
+        }
+        
+        if (typeof cef !== 'undefined') {
+            cef.emit('bank:' + currentBankAction, CEFINT(amount), CEFSTR(target));
+        }
+        
+        closeModal();
+    }
+
     // ===== Open / Close =====
     function openPhone() {
         isPhoneOpen = true;
@@ -996,6 +1340,7 @@
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && isPhoneOpen) closePhone();
+        if (e.key === 'Escape') closeModal(); // Close modal too
     });
 
     // ===== CEF Events =====
@@ -1020,6 +1365,26 @@
             const timeStr = String(parseInt(h)).padStart(2, '0') + ':' + String(parseInt(m)).padStart(2, '0');
             document.getElementById('status-time').textContent = timeStr;
             document.getElementById('home-clock').textContent = timeStr;
+        });
+
+        // Banking events
+        cef.on('bank:data', function(cash, bank) {
+            bankingData.cash = parseInt(cash);
+            bankingData.bank = parseInt(bank);
+            if (currentPage === 'banking') updateBankingDisplay();
+        });
+
+        cef.on('bank:logs', function(logsJson) {
+            try {
+                bankingData.logs = JSON.parse(logsJson);
+                if (currentPage === 'banking') updateBankLogs();
+            } catch(e) {
+                console.error('Failed to parse bank logs:', e);
+            }
+        });
+
+        cef.on('bank:notification', function(title, message) {
+            if (typeof cef !== 'undefined') cef.emit('phone:notify', CEFSTR(title), CEFSTR(message));
         });
     }
 
