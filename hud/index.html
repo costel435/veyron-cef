@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Veyron HUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,195 +13,203 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Arial', sans-serif;
+            font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
             background: transparent;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
         }
 
-        /* ===== BOTTOM-RIGHT: Main Stats HUD ===== */
-        #hud-stats {
+        /* ===== TOP-RIGHT: Date/Time + Money Card ===== */
+        #top-right {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
             align-items: flex-end;
+            gap: 6px;
         }
 
-        /* Server logo / name */
-        #server-name {
-            font-size: 14px;
+        /* Date & Time card */
+        .hud-card {
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        #datetime-card {
+            text-align: center;
+            min-width: 120px;
+        }
+
+        #hud-date {
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.65);
+            letter-spacing: 1px;
+        }
+
+        #hud-time {
+            font-size: 32px;
             font-weight: 700;
-            color: #c2a2da;
-            text-shadow: 1px 1px 4px rgba(0,0,0,0.8);
-            letter-spacing: 2px;
-            margin-bottom: 4px;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-top: 2px;
         }
 
-        /* Health & Armor bars */
-        .stat-bar {
+        /* Money card */
+        #money-card {
+            min-width: 150px;
+        }
+
+        .money-row {
             display: flex;
             align-items: center;
             gap: 8px;
-            width: 220px;
+            padding: 3px 0;
         }
 
-        .stat-bar .icon {
+        .money-row + .money-row {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            margin-top: 3px;
+            padding-top: 6px;
+        }
+
+        .money-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .money-dot.cash { background: #4cd964; }
+        .money-dot.bank { background: #4cd964; }
+
+        .money-icon {
             font-size: 14px;
-            width: 20px;
+            color: rgba(255, 255, 255, 0.45);
+            width: 18px;
             text-align: center;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
         }
 
-        .stat-bar .bar-bg {
-            flex: 1;
-            height: 10px;
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 5px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .stat-bar .bar-fill {
-            height: 100%;
-            border-radius: 5px;
-            transition: width 0.3s ease;
-        }
-
-        .stat-bar .bar-value {
-            font-size: 11px;
-            font-weight: 600;
-            color: #fff;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-            width: 30px;
-            text-align: right;
-        }
-
-        #hp-fill {
-            background: linear-gradient(90deg, #ff4444, #ff6b6b);
-            width: 100%;
-        }
-
-        #armor-fill {
-            background: linear-gradient(90deg, #4488ff, #66aaff);
-            width: 0%;
-        }
-
-        /* Money */
-        #money-display {
-            font-size: 22px;
+        .money-amount {
+            font-size: 15px;
             font-weight: 700;
-            color: #55cc55;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+            color: #ffffff;
+            flex: 1;
             text-align: right;
-            margin-top: 2px;
         }
 
-        #money-display.negative {
-            color: #ff4444;
-        }
-
-        /* Wanted Stars */
-        #wanted-display {
-            display: flex;
-            gap: 3px;
-            justify-content: flex-end;
-            margin-top: 2px;
-        }
-
-        .wanted-star {
-            font-size: 16px;
-            color: rgba(100, 100, 100, 0.4);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-            transition: color 0.3s ease;
-        }
-
-        .wanted-star.active {
-            color: #ffcc00;
-            text-shadow: 0 0 8px rgba(255, 204, 0, 0.6), 1px 1px 3px rgba(0,0,0,0.5);
-        }
-
-        /* ===== BOTTOM-CENTER: Speedometer (only when in vehicle) ===== */
-        #speedometer {
+        /* ===== BOTTOM-RIGHT: Speedometer + Info ===== */
+        #bottom-right {
             position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
+            bottom: 15px;
+            right: 15px;
+            display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 4px;
+            align-items: flex-end;
+            gap: 6px;
+        }
+
+        /* Speedometer */
+        #speedo-card {
+            display: none;
+            text-align: right;
+            padding: 12px 18px;
+        }
+
+        #speedo-card.visible {
+            display: block;
+        }
+
+        #speed-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: flex-end;
+            gap: 6px;
         }
 
         #speed-value {
-            font-size: 42px;
-            font-weight: 800;
+            font-size: 52px;
+            font-weight: 900;
             color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
             line-height: 1;
+            letter-spacing: -2px;
         }
 
         #speed-unit {
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 600;
-            color: rgba(255,255,255,0.6);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
-        }
-
-        #vehicle-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #c2a2da;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-            margin-top: 2px;
+            letter-spacing: 1px;
         }
 
         /* Speed color tiers */
         #speed-value.tier-slow { color: #ffffff; }
-        #speed-value.tier-normal { color: #ffcc00; }
-        #speed-value.tier-fast { color: #ff8800; }
-        #speed-value.tier-extreme { color: #ff2222; }
+        #speed-value.tier-normal { color: #f5c842; }
+        #speed-value.tier-fast { color: #ff8c00; }
+        #speed-value.tier-extreme { color: #ff3b30; }
 
-        /* ===== TOP-RIGHT: Clock & Zone ===== */
-        #top-info {
-            position: fixed;
-            top: 12px;
-            right: 20px;
+        /* Vehicle info rows */
+        .veh-info-row {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-top: 3px;
+        }
+
+        .veh-info-row span {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .veh-info-row span.locked { color: #ff3b30; }
+        .veh-info-row span.unlocked { color: #4cd964; }
+
+        /* Server info bottom-right */
+        #server-info {
             text-align: right;
         }
 
-        #clock {
-            font-size: 18px;
+        #player-info {
+            font-size: 12px;
             font-weight: 700;
-            color: #ffffff;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.9);
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        #zone-name {
-            font-size: 12px;
-            font-weight: 500;
-            color: rgba(255,255,255,0.7);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
-            margin-top: 2px;
+        #server-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: rgba(255, 255, 255, 0.35);
+            text-transform: lowercase;
+            letter-spacing: 0.5px;
         }
 
         /* ===== NOTIFICATION POPUP ===== */
         #notification {
             position: fixed;
             top: 80px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.75);
-            border-left: 3px solid #c2a2da;
-            border-radius: 4px;
-            padding: 10px 16px;
-            max-width: 300px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-left: 3px solid #4cd964;
+            border-radius: 8px;
+            padding: 12px 20px;
+            max-width: 350px;
+            min-width: 200px;
             display: none;
-            animation: slideIn 0.3s ease;
+            animation: notifIn 0.3s ease;
         }
 
         #notification.show {
@@ -208,10 +217,10 @@
         }
 
         #notif-title {
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            color: #c2a2da;
-            letter-spacing: 1px;
+            color: #4cd964;
+            letter-spacing: 1.5px;
             text-transform: uppercase;
         }
 
@@ -223,30 +232,71 @@
             line-height: 1.4;
         }
 
-        @keyframes slideIn {
-            from { transform: translateX(50px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        @keyframes notifIn {
+            from { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
         }
 
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(50px); opacity: 0; }
+        @keyframes notifOut {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+        }
+
+        /* ===== Wanted Stars ===== */
+        #wanted-display {
+            display: none;
+            gap: 2px;
+            justify-content: flex-end;
+        }
+
+        #wanted-display.active {
+            display: flex;
+        }
+
+        .wanted-star {
+            font-size: 14px;
+            color: rgba(100, 100, 100, 0.3);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        .wanted-star.active {
+            color: #ffcc00;
+            text-shadow: 0 0 6px rgba(255, 204, 0, 0.5);
+        }
+
+        /* ===== Zone name ===== */
+        #zone-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.4);
+            text-align: right;
+            letter-spacing: 0.5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Right: Clock & Zone -->
-    <div id="top-info">
-        <div id="clock">12:00</div>
-        <div id="zone-name">Los Santos</div>
-    </div>
+    <!-- Top Right: Date/Time + Money -->
+    <div id="top-right">
+        <div class="hud-card" id="datetime-card">
+            <div id="hud-date">01/01/2026</div>
+            <div id="hud-time">12:00</div>
+        </div>
 
-    <!-- Bottom Right: Stats -->
-    <div id="hud-stats">
-        <div id="server-name">VEYRON RPG</div>
+        <div class="hud-card" id="money-card">
+            <div class="money-row">
+                <span class="money-dot cash"></span>
+                <span class="money-icon">$</span>
+                <span class="money-amount" id="cash-display">0</span>
+            </div>
+            <div class="money-row">
+                <span class="money-dot bank"></span>
+                <span class="money-icon">🏦</span>
+                <span class="money-amount" id="bank-display">0</span>
+            </div>
+        </div>
 
-        <!-- Wanted Stars -->
+        <!-- Wanted Stars (only visible when wanted > 0) -->
         <div id="wanted-display">
             <span class="wanted-star" data-star="1">★</span>
             <span class="wanted-star" data-star="2">★</span>
@@ -255,30 +305,24 @@
             <span class="wanted-star" data-star="5">★</span>
             <span class="wanted-star" data-star="6">★</span>
         </div>
-
-        <!-- Money -->
-        <div id="money-display">$0</div>
-
-        <!-- Health -->
-        <div class="stat-bar">
-            <span class="icon" style="color:#ff4444;">♥</span>
-            <div class="bar-bg"><div class="bar-fill" id="hp-fill"></div></div>
-            <span class="bar-value" id="hp-value">100</span>
-        </div>
-
-        <!-- Armor -->
-        <div class="stat-bar">
-            <span class="icon" style="color:#4488ff;">🛡</span>
-            <div class="bar-bg"><div class="bar-fill" id="armor-fill"></div></div>
-            <span class="bar-value" id="armor-value">0</span>
-        </div>
     </div>
 
-    <!-- Bottom Center: Speedometer -->
-    <div id="speedometer">
-        <div id="speed-value">0</div>
-        <div id="speed-unit">KM/H</div>
-        <div id="vehicle-name">—</div>
+    <!-- Bottom Right: Speedometer + Server Info -->
+    <div id="bottom-right">
+        <div class="hud-card" id="speedo-card">
+            <div id="speed-row">
+                <span id="speed-value">0</span>
+                <span id="speed-unit">km/h</span>
+            </div>
+            <div class="veh-info-row">DOORS: <span id="doors-status" class="unlocked">UNLOCKED</span></div>
+            <div class="veh-info-row">FUEL: <span id="fuel-status">Infinite</span></div>
+        </div>
+
+        <div id="server-info">
+            <div id="zone-name">Los Santos</div>
+            <div id="player-info">Player [ID: 0]</div>
+            <div id="server-name">veyron-rpg.ro</div>
+        </div>
     </div>
 
     <!-- Notification popup -->
@@ -293,42 +337,48 @@
             hp: 100,
             armor: 0,
             money: 0,
+            bank: 0,
             wanted: 0,
             speed: 0,
             inVehicle: false,
             vehicleName: '',
             zone: 'Los Santos',
             hour: 12,
-            minute: 0
+            minute: 0,
+            playerName: 'Player',
+            playerId: 0,
+            doors: 0,
+            fuel: -1
         };
+
+        // ===== Formatting =====
+        function formatMoney(amount) {
+            return '$' + Math.abs(amount).toLocaleString('en-US');
+        }
 
         // ===== Update Functions =====
         function updateHealth(hp) {
             hudState.hp = Math.max(0, Math.min(100, hp));
-            document.getElementById('hp-fill').style.width = hudState.hp + '%';
-            document.getElementById('hp-value').textContent = Math.round(hudState.hp);
         }
 
         function updateArmor(armor) {
             hudState.armor = Math.max(0, Math.min(100, armor));
-            document.getElementById('armor-fill').style.width = hudState.armor + '%';
-            document.getElementById('armor-value').textContent = Math.round(hudState.armor);
         }
 
         function updateMoney(money) {
             hudState.money = money;
-            const el = document.getElementById('money-display');
-            if (money < 0) {
-                el.textContent = '-$' + Math.abs(money).toLocaleString();
-                el.classList.add('negative');
-            } else {
-                el.textContent = '$' + money.toLocaleString();
-                el.classList.remove('negative');
-            }
+            document.getElementById('cash-display').textContent = formatMoney(money);
+        }
+
+        function updateBank(bank) {
+            hudState.bank = bank;
+            document.getElementById('bank-display').textContent = formatMoney(bank);
         }
 
         function updateWanted(level) {
             hudState.wanted = Math.max(0, Math.min(6, level));
+            const container = document.getElementById('wanted-display');
+            container.classList.toggle('active', hudState.wanted > 0);
             document.querySelectorAll('.wanted-star').forEach(star => {
                 const starNum = parseInt(star.dataset.star);
                 star.classList.toggle('active', starNum <= hudState.wanted);
@@ -340,7 +390,6 @@
             const el = document.getElementById('speed-value');
             el.textContent = Math.round(hudState.speed);
 
-            // Color tier
             el.className = '';
             if (hudState.speed < 60) el.classList.add('tier-slow');
             else if (hudState.speed < 120) el.classList.add('tier-normal');
@@ -351,10 +400,35 @@
         function updateVehicle(inVehicle, vehicleName) {
             hudState.inVehicle = inVehicle;
             hudState.vehicleName = vehicleName || '';
-            const speedo = document.getElementById('speedometer');
-            speedo.style.display = inVehicle ? 'flex' : 'none';
-            document.getElementById('vehicle-name').textContent = vehicleName || '—';
-            if (!inVehicle) updateSpeed(0);
+            const speedo = document.getElementById('speedo-card');
+            if (inVehicle) {
+                speedo.classList.add('visible');
+            } else {
+                speedo.classList.remove('visible');
+                updateSpeed(0);
+            }
+        }
+
+        function updateDoors(locked) {
+            hudState.doors = locked;
+            const el = document.getElementById('doors-status');
+            if (locked) {
+                el.textContent = 'LOCKED';
+                el.className = 'locked';
+            } else {
+                el.textContent = 'UNLOCKED';
+                el.className = 'unlocked';
+            }
+        }
+
+        function updateFuel(fuel) {
+            hudState.fuel = fuel;
+            const el = document.getElementById('fuel-status');
+            if (fuel < 0) {
+                el.textContent = 'Infinite';
+            } else {
+                el.textContent = fuel + '%';
+            }
         }
 
         function updateZone(zone) {
@@ -367,7 +441,20 @@
             hudState.minute = minute;
             const h = String(hour).padStart(2, '0');
             const m = String(minute).padStart(2, '0');
-            document.getElementById('clock').textContent = h + ':' + m;
+            document.getElementById('hud-time').textContent = h + ':' + m;
+
+            // Update date display
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+            document.getElementById('hud-date').textContent = dd + '/' + mm + '/' + yyyy;
+        }
+
+        function updatePlayerInfo(name, id) {
+            hudState.playerName = name || 'Player';
+            hudState.playerId = id || 0;
+            document.getElementById('player-info').textContent = name + ' [ID: ' + id + ']';
         }
 
         function showNotification(title, text, duration) {
@@ -375,10 +462,10 @@
             document.getElementById('notif-title').textContent = title;
             document.getElementById('notif-text').textContent = text;
             notif.classList.add('show');
-            notif.style.animation = 'slideIn 0.3s ease';
+            notif.style.animation = 'notifIn 0.3s ease';
 
             setTimeout(() => {
-                notif.style.animation = 'slideOut 0.3s ease';
+                notif.style.animation = 'notifOut 0.3s ease';
                 setTimeout(() => {
                     notif.classList.remove('show');
                 }, 280);
@@ -386,12 +473,11 @@
         }
 
         function toggleHud(visible) {
-            document.getElementById('hud-stats').style.display = visible ? 'flex' : 'none';
-            document.getElementById('top-info').style.display = visible ? 'block' : 'none';
+            document.getElementById('top-right').style.display = visible ? 'flex' : 'none';
+            document.getElementById('bottom-right').style.display = visible ? 'flex' : 'none';
         }
 
         // ===== CEF Event Listeners =====
-        // Server sends events via cef_emit_event, JS receives them here
         if (typeof cef !== 'undefined') {
             cef.on('hud:health', function(hp) {
                 updateHealth(parseInt(hp));
@@ -403,6 +489,10 @@
 
             cef.on('hud:money', function(money) {
                 updateMoney(parseInt(money));
+            });
+
+            cef.on('hud:bank', function(bank) {
+                updateBank(parseInt(bank));
             });
 
             cef.on('hud:wanted', function(level) {
@@ -417,12 +507,24 @@
                 updateVehicle(inVehicle === '1' || inVehicle === 'true', name || '');
             });
 
+            cef.on('hud:doors', function(locked) {
+                updateDoors(parseInt(locked));
+            });
+
+            cef.on('hud:fuel', function(fuel) {
+                updateFuel(parseInt(fuel));
+            });
+
             cef.on('hud:zone', function(zone) {
                 updateZone(zone);
             });
 
             cef.on('hud:clock', function(hour, minute) {
                 updateClock(parseInt(hour), parseInt(minute));
+            });
+
+            cef.on('hud:playerinfo', function(name, id) {
+                updatePlayerInfo(name, parseInt(id));
             });
 
             cef.on('hud:notify', function(title, text, duration) {
@@ -434,10 +536,11 @@
             });
 
             // Full state update (all at once)
-            cef.on('hud:update', function(hp, armor, money, wanted, speed, inVeh, vehName, zone, hour, minute) {
+            cef.on('hud:update', function(hp, armor, money, bank, wanted, speed, inVeh, vehName, zone, hour, minute) {
                 updateHealth(parseInt(hp));
                 updateArmor(parseInt(armor));
                 updateMoney(parseInt(money));
+                updateBank(parseInt(bank));
                 updateWanted(parseInt(wanted));
                 updateSpeed(parseInt(speed));
                 updateVehicle(inVeh === '1', vehName);
@@ -460,6 +563,9 @@
                 }
             }
         });
+
+        // Init date on load
+        updateClock(12, 0);
     </script>
 </body>
 </html>
